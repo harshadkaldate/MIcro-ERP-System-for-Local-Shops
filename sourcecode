@@ -1,1 +1,273 @@
-hello
+/******************************************************************************
+ * Project: RetailCore - Hyperlocal Micro-ERP
+ * Team: Harshad Kaldate and co. 
+ * Description: High-performance inventory management for local retail.
+ * Features: Hybrid Billing, Low Stock Alerts, CSV Persistence.
+ *****************************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// --- CONFIGURATION ---
+#define MAX_ITEMS 5000
+#define DB_FILE "C:/Users/HP/Desktop/My Projects/C language/projectdata.csv"
+#define LOW_STOCK_THRESHOLD 15.0
+#define BILL_HEADER "   RETAILCORE RECEIPT   "
+
+// --- DATA STRUCTURES ---
+typedef struct {
+    int id;
+    char name[60];
+    char category[30];
+    float price;
+    float stock;       // Float allows for kg/liters
+    char unit[10];     // "kg", "pkt", "L"
+} Product;
+
+// Global Inventory Memory
+Product inventory[MAX_ITEMS];
+int itemCount = 0;
+
+// --- UTILITY FUNCTIONS ---
+
+// Clears the input buffer to prevent scanning errors
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+// Get current date for the bill
+void printCurrentDate() {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    printf("Date: %02d-%02d-%d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+}
+
+// --- FILE HANDLING MODULE ---
+
+void loadDatabase() {
+    FILE *fp = fopen(DB_FILE, "r");
+    if (!fp) {
+        printf("\n[SYSTEM] Warning: %s not found. Starting with empty inventory.\n", DB_FILE);
+        return;
+    }
+
+    char buffer[256];
+    // Skip Header Row
+    fgets(buffer, sizeof(buffer), fp);
+
+    itemCount = 0;
+    while (fgets(buffer, sizeof(buffer), fp)) {
+        Product p;
+        // Parse CSV line: ID,Name,Category,Price,Stock,Unit
+        // Note: %[^,] reads until comma
+        if (sscanf(buffer, "%d,%[^,],%[^,],%f,%f,%s", 
+                   &p.id, p.name, p.category, &p.price, &p.stock, p.unit) == 6) {
+            inventory[itemCount++] = p;
+        }
+    }
+    fclose(fp);
+    printf("[SYSTEM] Database Loaded: %d items ready.\n", itemCount);
+}
+
+void saveDatabase() {
+    FILE *fp = fopen(DB_FILE, "w");
+    if (!fp) {
+        printf("[ERROR] Could not save database!\n");
+        return;
+    }
+
+    // Write Header
+    fprintf(fp, "ID,Name,Category,Price,Stock,Unit\n");
+
+    // Write All Items
+    for (int i = 0; i < itemCount; i++) {
+        fprintf(fp, "%d,%s,%s,%.2f,%.2f,%s\n", 
+                inventory[i].id, inventory[i].name, inventory[i].category, 
+                inventory[i].price, inventory[i].stock, inventory[i].unit);
+    }
+    fclose(fp);
+    // printf("[SYSTEM] Data synchronized to disk.\n"); // Optional: Uncomment for debug
+}
+
+// --- CORE LOGIC MODULE ---
+
+int findProductIndex(int id) {
+    for (int i = 0; i < itemCount; i++) {
+        if (inventory[i].id == id) return i;
+    }
+    return -1;
+}
+
+void generateLowStockReport() {
+    printf("\n=================================================\n");
+    printf(" [!] CRITICAL STOCK ALERT (Items < %.0f) \n", (float)LOW_STOCK_THRESHOLD);
+    printf("=================================================\n");
+    printf("%-6s %-30s %-10s %s\n", "ID", "Product Name", "Stock", "Unit");
+    printf("-------------------------------------------------\n");
+    
+    int alertCount = 0;
+    for (int i = 0; i < itemCount; i++) {
+        if (inventory[i].stock < LOW_STOCK_THRESHOLD) {
+            printf("%-6d %-30s %-10.2f %s\n", 
+                   inventory[i].id, inventory[i].name, inventory[i].stock, inventory[i].unit);
+            alertCount++;
+        }
+    }
+    
+    if (alertCount == 0) {
+        printf(" [OK] All inventory levels are healthy.\n");
+    } else {
+        printf("-------------------------------------------------\n");
+        printf(" ACTION REQUIRED: %d items need restocking.\n", alertCount);
+    }
+    printf("=================================================\n\n");
+}
+
+void processBilling() {
+    int id;
+    float qty;
+    float totalBill = 0.0;
+    char choice;
+    int itemsInBill = 0;
+
+    printf("\n\n");
+    printf("======================================\n");
+    printf("%s\n", BILL_HEADER);
+    printCurrentDate();
+    printf("======================================\n");
+
+    do {
+        printf("\n>> Scan Item ID: ");
+        if (scanf("%d", &id) != 1) {
+            clearInputBuffer();
+            printf("   [!] Invalid Input.\n");
+            continue;
+        }
+
+        int idx = findProductIndex(id);
+        if (idx == -1) {
+            printf("   [!] Item ID %d not found in database.\n", id);
+        } else {
+            printf("   FOUND: %s (%s)\n", inventory[idx].name, inventory[idx].category);
+            printf("   Price: Rs. %.2f | Available: %.2f %s\n", 
+                   inventory[idx].price, inventory[idx].stock, inventory[idx].unit);
+            
+            printf("   >> Enter Quantity: ");
+            scanf("%f", &qty);
+
+            if (qty <= 0) {
+                printf("   [!] Quantity must be positive.\n");
+            } else if (qty > inventory[idx].stock) {
+                printf("   [!] STOCK ERROR: Only %.2f %s available.\n", inventory[idx].stock, inventory[idx].unit);
+            } else {
+                // Transaction Logic
+                float lineTotal = qty * inventory[idx].price;
+                totalBill += lineTotal;
+                inventory[idx].stock -= qty; // Deduct Stock
+                itemsInBill++;
+                
+                printf("   [+] Added: Rs. %.2f\n", lineTotal);
+                printf("   [i] Remaining Stock: %.2f %s\n", inventory[idx].stock, inventory[idx].unit);
+            }
+        }
+
+        printf("\n>> Add another item? (y/n): ");
+        clearInputBuffer(); // Clear newline from buffer
+        scanf("%c", &choice);
+
+    } while (choice == 'y' || choice == 'Y');
+
+    // Final Bill Printing
+    if (itemsInBill > 0) {
+        printf("\n\n");
+        printf("************** BILL SUMMARY **************\n");
+        printf(" Total Items: %d\n", itemsInBill);
+        printf(" GRAND TOTAL: Rs. %.2f\n", totalBill);
+        printf("******************************************\n");
+        printf(" Thank you for shopping with us!\n\n");
+        
+        saveDatabase(); // Auto-save after transaction
+    } else {
+        printf("\n[i] Transaction Cancelled.\n");
+    }
+}
+
+void viewInventory() {
+    printf("\n%-6s %-30s %-15s %-10s %-8s\n", "ID", "Name", "Category", "Price", "Stock");
+    printf("--------------------------------------------------------------------------\n");
+    // Showing first 15 items to avoid flooding the screen
+    int limit = (itemCount < 15) ? itemCount : 15;
+    
+    for (int i = 0; i < limit; i++) {
+        printf("%-6d %-30s %-15s %-10.2f %-8.2f\n", 
+               inventory[i].id, inventory[i].name, inventory[i].category, 
+               inventory[i].price, inventory[i].stock);
+    }
+    if (itemCount > 15) {
+        printf("... [ +%d more items in database ] ...\n", itemCount - 15);
+    }
+    printf("--------------------------------------------------------------------------\n");
+}
+
+// --- MAIN DRIVER ---
+
+int main() {
+    // 1. Initialization
+    printf("Booting RetailCore Engine...\n");
+    loadDatabase();
+
+    int choice;
+    while (1) {
+        printf("\n");
+        printf(" /----------------------------------\\\n");
+        printf(" |    RETAILCORE - MAIN MENU        |\n");
+        printf(" \\----------------------------------/\n");
+        printf(" | 1. New Billing Transaction       |\n");
+        printf(" | 2. View Inventory Snippet        |\n");
+        printf(" | 3. Run Low Stock Audit           |\n");
+        printf(" | 4. Search Item by ID             |\n");
+        printf(" | 5. Exit System                   |\n");
+        printf(" ------------------------------------\n");
+        printf(" Select Option: ");
+        
+        if (scanf("%d", &choice) != 1) {
+            clearInputBuffer();
+            choice = 0; 
+        }
+
+        switch (choice) {
+            case 1:
+                processBilling();
+                break;
+            case 2:
+                viewInventory();
+                break;
+            case 3:
+                generateLowStockReport();
+                break;
+            case 4: {
+                int id;
+                printf("Enter Item ID: ");
+                scanf("%d", &id);
+                int idx = findProductIndex(id);
+                if (idx != -1) {
+                    printf("\n[RESULT] %s | Price: %.2f | Stock: %.2f %s\n", 
+                           inventory[idx].name, inventory[idx].price, inventory[idx].stock, inventory[idx].unit);
+                } else {
+                    printf("\n[!] Item not found.\n");
+                }
+                break;
+            }
+            case 5:
+                saveDatabase();
+                printf("System Shutdown... Goodbye.\n");
+                exit(0);
+            default:
+                printf("[!] Invalid Selection. Try again.\n");
+        }
+    }
+    return 0;
+}
