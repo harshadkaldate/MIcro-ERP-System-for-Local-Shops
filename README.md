@@ -9,4 +9,4 @@ Key Features
 Hybrid Inventory Logic: Unlike standard apps, RetailCore uses float-based stock tracking (e.g., selling 0.250kg of Sugar), eliminating "weight-loss" errors.
 "Dukan Alert" System: Implements a threshold algorithm to automatically generate restocking "Shopping Lists".
 Atomic Saves & Persistence: Uses a portable CSV database with instant disk synchronization to prevent data loss during power cuts.
-Legacy Hardware Support: Engineered for 15-year-old PCs (Pentium 4) with 0.01s search latency for 2,500+ items
+Legacy Hardware Support: Engineered for 15-year-old PCs (Pentium 4) with 0.01s search latency for 2,500+ items..
