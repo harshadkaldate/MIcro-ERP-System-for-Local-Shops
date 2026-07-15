@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailCore — Dukan Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ============ TOKENS ============ */
+:root[data-theme="dark"]{
+  --bg:#12142B; --bg-2:#0D0E22; --surface:#1B1E42; --surface-2:#242850;
+  --border:rgba(255,255,255,0.08); --text:#F2F1F8; --text-dim:#9A9DC4;
+  --accent:#FFA630; --accent-ink:#3A2400; --accent-2:#2DD4A7; --danger:#FF5C7A;
+  --shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+:root[data-theme="light"]{
+  --bg:#F4F5FB; --bg-2:#ECEEFA; --surface:#FFFFFF; --surface-2:#F1F2FA;
+  --border:rgba(20,22,60,0.09); --text:#181A33; --text-dim:#63668C;
+  --accent:#F08A00; --accent-ink:#2A1700; --accent-2:#0E9E7E; --danger:#E1425F;
+  --shadow: 0 20px 50px rgba(30,32,80,0.12);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
+  min-height:100vh; transition:background .3s ease, color .3s ease;
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+.disp{font-family:'Poppins',sans-serif;}
+::selection{background:var(--accent); color:var(--accent-ink);}
+a{color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+input,select{font-family:inherit;}
+
+/* ============ AUTH SCREEN ============ */
+#auth-screen{
+  min-height:100vh; display:grid; grid-template-columns: 1.1fr 1fr;
+}
+@media (max-width: 880px){ #auth-screen{grid-template-columns:1fr;} .auth-brand{display:none;} }
+
+.auth-brand{
+  position:relative; overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,166,48,0.25), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(45,212,167,0.20), transparent 45%),
+    linear-gradient(160deg, #0D0E22 0%, #1B1E42 60%, #0D0E22 100%);
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:56px 56px;
+  color:#F2F1F8;
+}
+.brand-mark{display:flex; align-items:center; gap:12px; font-family:'Poppins'; font-weight:800; font-size:22px; letter-spacing:.2px;}
+.brand-mark .dot{width:12px;height:12px;border-radius:50%;background:var(--accent); box-shadow:0 0 18px var(--accent);}
+.auth-brand h1{
+  font-family:'Poppins'; font-weight:800; font-size:44px; line-height:1.12; max-width:520px; margin-top:40px;
+}
+.auth-brand h1 span{color:var(--accent);}
+.auth-brand p.sub{color:#B7B9DE; max-width:440px; margin-top:18px; font-size:15.5px; line-height:1.6;}
+
+/* Signature element: live ledger ticker */
+.ledger-ticker{
+  margin-top:40px; border:1px solid rgba(255,255,255,0.12); border-radius:14px;
+  background:rgba(255,255,255,0.04); backdrop-filter: blur(6px);
+  height:220px; overflow:hidden; position:relative;
+  padding:0 20px;
+}
+.ledger-ticker::before, .ledger-ticker::after{
+  content:''; position:absolute; left:0; right:0; height:36px; z-index:2; pointer-events:none;
+}
+.ledger-ticker::before{top:0; background:linear-gradient(180deg, rgba(13,14,34,0.9), transparent);}
+.ledger-ticker::after{bottom:0; background:linear-gradient(0deg, rgba(13,14,34,0.9), transparent);}
+.ticker-track{position:absolute; width:100%; animation: scrollUp 14s linear infinite;}
+@keyframes scrollUp{ from{transform:translateY(0);} to{transform:translateY(-50%);} }
+.ticker-line{
+  display:flex; justify-content:space-between; padding:9px 4px; font-family:'JetBrains Mono';
+  font-size:12.5px; color:#B7B9DE; border-bottom:1px dashed rgba(255,255,255,0.08);
+}
+.ticker-line b{color:#EDEBFF; font-weight:500;}
+.ticker-line .amt{color:var(--accent-2);}
+
+.auth-foot{color:#7C7FAC; font-size:12.5px;}
+
+.auth-form-wrap{
+  display:flex; align-items:center; justify-content:center; padding:32px;
+  background:var(--bg);
+}
+.auth-card{width:100%; max-width:400px;}
+.auth-tabs{display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:12px; margin-bottom:28px;}
+.auth-tabs button{
+  flex:1; border:none; background:transparent; color:var(--text-dim); font-weight:600; font-size:14px;
+  padding:10px 0; border-radius:9px; transition:.2s;
+}
+.auth-tabs button.active{background:var(--surface); color:var(--text); box-shadow:var(--shadow);}
+.field{margin-bottom:16px;}
+.field label{font-size:12.5px; color:var(--text-dim); font-weight:600; display:block; margin-bottom:6px; letter-spacing:.2px;}
+.field input{
+  width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border);
+  background:var(--surface); color:var(--text); font-size:14.5px; outline:none; transition:.2s;
+}
+.field input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,166,48,0.15);}
+.btn{
+  width:100%; padding:13px 0; border-radius:10px; border:none; font-weight:700; font-size:14.5px;
+  transition:.15s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn-primary{background:var(--accent); color:var(--accent-ink);}
+.btn-primary:hover{filter:brightness(1.07); transform:translateY(-1px);}
+.btn-outline{background:transparent; border:1px solid var(--border); color:var(--text); margin-top:10px;}
+.btn-outline:hover{border-color:var(--accent);}
+.divider{display:flex; align-items:center; gap:12px; margin:22px 0 14px; color:var(--text-dim); font-size:12px;}
+.divider::before,.divider::after{content:''; flex:1; height:1px; background:var(--border);}
+.auth-note{font-size:12px; color:var(--text-dim); margin-top:18px; line-height:1.6;}
+.err-msg{color:var(--danger); font-size:12.5px; margin-top:-6px; margin-bottom:12px; min-height:14px;}
+
+/* ============ APP SHELL ============ */
+#app-shell{display:none; min-height:100vh; grid-template-columns:250px 1fr;}
+#app-shell.active{display:grid;}
+.sidebar{
+  background:var(--surface); border-right:1px solid var(--border); padding:24px 18px; display:flex; flex-direction:column;
+}
+.sidebar .brand-mark{margin-bottom:30px; padding-left:6px;}
+.nav-item{
+  display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; color:var(--text-dim);
+  font-weight:600; font-size:14px; margin-bottom:4px; border:none; background:transparent; width:100%; text-align:left; transition:.15s;
+}
+.nav-item i{width:18px; text-align:center; font-size:15px;}
+.nav-item:hover{background:var(--surface-2); color:var(--text);}
+.nav-item.active{background:linear-gradient(90deg, rgba(255,166,48,0.18), transparent); color:var(--accent); position:relative;}
+.nav-item.active::before{content:''; position:absolute; left:-18px; top:8px; bottom:8px; width:3px; background:var(--accent); border-radius:2px;}
+.sidebar-bottom{margin-top:auto; padding-top:16px; border-top:1px solid var(--border);}
+.user-chip{display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px;}
+.avatar{width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'Poppins'; color:#1B1E42; font-size:14px; flex-shrink:0;}
+.user-chip .name{font-size:13.5px; font-weight:600;}
+.user-chip .email{font-size:11px; color:var(--text-dim);}
+.logout-btn{width:100%; margin-top:10px; padding:9px; border-radius:9px; border:1px solid var(--border); background:transparent; color:var(--text-dim); font-size:12.5px; font-weight:600;}
+.logout-btn:hover{color:var(--danger); border-color:var(--danger);}
+
+.main{padding:26px 34px 60px; overflow-y:auto; height:100vh;}
+.topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:26px; gap:20px;}
+.page-title{font-family:'Poppins'; font-weight:700; font-size:24px;}
+.page-sub{color:var(--text-dim); font-size:13px; margin-top:3px;}
+.top-actions{display:flex; align-items:center; gap:12px;}
+.icon-btn{
+  width:38px; height:38px; border-radius:10px; border:1px solid var(--border); background:var(--surface);
+  display:flex; align-items:center; justify-content:center; color:var(--text-dim);
+}
+.icon-btn:hover{color:var(--accent); border-color:var(--accent);}
+
+.grid-cards{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;}
+@media(max-width:1100px){.grid-cards{grid-template-columns:repeat(2,1fr);}}
+.stat-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px;
+  position:relative; overflow:hidden;
+}
+.stat-card .ic{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; margin-bottom:14px;}
+.stat-card .val{font-family:'Poppins'; font-weight:800; font-size:26px;}
+.stat-card .lbl{color:var(--text-dim); font-size:12.5px; margin-top:2px; font-weight:600;}
+.stat-card.a .ic{background:rgba(255,166,48,0.15); color:var(--accent);}
+.stat-card.b .ic{background:rgba(45,212,167,0.15); color:var(--accent-2);}
+.stat-card.c .ic{background:rgba(255,92,122,0.15); color:var(--danger);}
+.stat-card.d .ic{background:rgba(130,140,255,0.15); color:#8C97FF;}
+
+.panel{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:20px;}
+.panel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+.panel-head h3{font-family:'Poppins'; font-size:16px; font-weight:700;}
+
+.two-col{display:grid; grid-template-columns:1.5fr 1fr; gap:20px;}
+@media(max-width:1000px){.two-col{grid-template-columns:1fr;}}
+
+table{width:100%; border-collapse:collapse;}
+th{text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-dim); padding:10px 12px; border-bottom:1px solid var(--border);}
+td{padding:12px 12px; font-size:13.5px; border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+.badge{padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700;}
+.badge.ok{background:rgba(45,212,167,0.15); color:var(--accent-2);}
+.badge.low{background:rgba(255,92,122,0.15); color:var(--danger);}
+.mini-btn{border:1px solid var(--border); background:transparent; color:var(--text-dim); padding:6px 10px; border-radius:7px; font-size:12px; font-weight:600; margin-right:6px;}
+.mini-btn:hover{border-color:var(--accent); color:var(--accent);}
+.mini-btn.danger:hover{border-color:var(--danger); color:var(--danger);}
+
+.searchbar{display:flex; align-items:center; gap:9px; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:9px 14px; flex:1; max-width:340px;}
+.searchbar input{background:transparent; border:none; outline:none; color:var(--text); font-size:13.5px; width:100%;}
+.searchbar i{color:var(--text-dim);}
+
+/* Billing / POS receipt */
+.pos-grid{display:grid; grid-template-columns:1.4fr 1fr; gap:20px;}
+@media(max-width:1000px){.pos-grid{grid-template-columns:1fr;}}
+.product-tile{
+  border:1px solid var(--border); border-radius:12px; padding:14px; cursor:pointer; transition:.15s; background:var(--surface-2);
+}
+.product-tile:hover{border-color:var(--accent); transform:translateY(-2px);}
+.product-tile .pname{font-weight:700; font-size:13.5px;}
+.product-tile .pcat{color:var(--text-dim); font-size:11px; margin:2px 0 8px;}
+.product-tile .pprice{font-family:'JetBrains Mono'; color:var(--accent-2); font-size:13px; font-weight:700;}
+.product-tile .pstock{font-size:11px; color:var(--text-dim); margin-top:3px;}
+.tile-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; max-height:520px; overflow-y:auto; padding-right:4px;}
+
+.receipt{
+  background:#FBF9F2; color:#1a1a1a; border-radius:4px; padding:22px 20px 30px; font-family:'JetBrains Mono';
+  position:relative; box-shadow:var(--shadow);
+  clip-path: polygon(0% 0%,100% 0%,100% 97%,95% 100%,90% 97%,85% 100%,80% 97%,75% 100%,70% 97%,65% 100%,60% 97%,55% 100%,50% 97%,45% 100%,40% 97%,35% 100%,30% 97%,25% 100%,20% 97%,15% 100%,10% 97%,5% 100%,0% 97%);
+}
+.receipt h4{text-align:center; letter-spacing:2px; font-size:14px; margin-bottom:2px;}
+.receipt .rsub{text-align:center; font-size:10px; color:#666; margin-bottom:14px;}
+.receipt-line{display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px dashed #ccc;}
+.receipt-line .rm{color:#777; font-size:10px;}
+.receipt-total{display:flex; justify-content:space-between; font-weight:700; font-size:15px; margin-top:14px; padding-top:10px; border-top:2px dashed #555;}
+.receipt-empty{text-align:center; color:#999; font-size:12px; padding:30px 0;}
+.rm-btn{background:none; border:none; color:#c33; cursor:pointer; font-size:12px;}
+
+.form-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.modal-bg{position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:50;}
+.modal-bg.active{display:flex;}
+.modal{background:var(--surface); border-radius:16px; padding:26px; width:100%; max-width:420px; border:1px solid var(--border);}
+.modal h3{font-family:'Poppins'; margin-bottom:16px;}
+
+.toast-wrap{position:fixed; bottom:24px; right:24px; z-index:100; display:flex; flex-direction:column; gap:10px;}
+.toast{background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--accent-2); padding:13px 18px; border-radius:10px; box-shadow:var(--shadow); font-size:13px; min-width:230px; animation:slideIn .25s ease;}
+.toast.error{border-left-color:var(--danger);}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0;} to{transform:translateX(0);opacity:1;}}
+
+.empty-state{text-align:center; padding:50px 20px; color:var(--text-dim);}
+.empty-state i{font-size:32px; margin-bottom:12px; color:var(--accent);}
+
+.chip-select{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+.chip-select button{padding:7px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); font-size:12.5px; font-weight:600;}
+.chip-select button.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+
+.marquee-bar{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 16px; margin-bottom:20px; overflow:hidden; white-space:nowrap; font-size:12.5px; color:var(--text-dim);}
+.marquee-bar span{display:inline-block; animation:marquee 18s linear infinite;}
+@keyframes marquee{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH SCREEN ================= -->
+<div id="auth-screen">
+  <div class="auth-brand">
+    <div class="brand-mark"><span class="dot"></span> RetailCore</div>
+    <div>
+      <h1>Run your <span>dukan</span> like it's already digital.</h1>
+      <p class="sub">Billing, inventory, and stock alerts for hyperlocal retail — built for the counter, not a boardroom.</p>
+      <div class="ledger-ticker">
+        <div class="ticker-track" id="ticker-track"></div>
+      </div>
+    </div>
+    <div class="auth-foot">© 2026 RetailCore · Made for Kirana & small retail</div>
+  </div>
+
+  <div class="auth-form-wrap">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="active" id="tab-login" onclick="switchAuthTab('login')">Sign in</button>
+        <button id="tab-signup" onclick="switchAuthTab('signup')">Create account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="form-login" onsubmit="return handleLogin(event)">
+        <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@shop.com" required></div>
+        <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" required></div>
+        <div class="err-msg" id="login-err"></div>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign in</button>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form id="form-signup" style="display:none" onsubmit="return handleSignup(event)">
+        <div class="field"><label>Shop / owner name</label><input type="text" id="signup-name" placeholder="Sharma General Store" required></div>
+        <div class="field"><label>Email</label><input type="email" id="signup-email" placeholder="you@shop.com" required></div>
+        <div class="field"><label>Password</label><input type="password" id="signup-pass" placeholder="min. 6 characters" required minlength="6"></div>
+        <div class="err-msg" id="signup-err"></div>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Create account</button>
+      </form>
+
+      <div class="divider">OR CONTINUE WITH</div>
+      <button class="btn btn-outline" onclick="loginGoogle()"><i class="fa-brands fa-google"></i> Continue with Google</button>
+      <button class="btn btn-outline" onclick="openPhoneModal()"><i class="fa-solid fa-mobile-screen-button"></i> Continue with Phone</button>
+
+      <p class="auth-note">Google &amp; Phone sign-in run in <b>demo mode</b> in this preview. See the setup guide below the app to connect real Firebase Authentication.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PHONE OTP MODAL ================= -->
+<div class="modal-bg" id="phone-modal">
+  <div class="modal">
+    <h3 class="disp">Sign in with phone</h3>
+    <div id="phone-step-1">
+      <div class="field"><label>Mobile number</label><input type="tel" id="phone-number" placeholder="+91 98765 43210"></div>
+      <button class="btn btn-primary" onclick="sendOtp()">Send OTP</button>
+    </div>
+    <div id="phone-step-2" style="display:none">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:14px;">Demo OTP sent — check the toast notification, then enter it below.</p>
+      <div class="field"><label>Enter OTP</label><input type="text" id="phone-otp" maxlength="4" placeholder="1234"></div>
+      <button class="btn btn-primary" onclick="verifyOtp()">Verify &amp; sign in</button>
+    </div>
+    <button class="btn btn-outline" onclick="closePhoneModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ================= GOOGLE DEMO MODAL ================= -->
+<div class="modal-bg" id="google-modal">
+  <div class="modal">
+    <h3 class="disp"><i class="fa-brands fa-google"></i> Choose an account</h3>
+    <div class="field"><label>Name</label><input type="text" id="google-name" placeholder="Priya Sharma"></div>
+    <div class="field"><label>Email</label><input type="email" id="google-email" placeholder="priya@gmail.com"></div>
+    <button class="btn btn-primary" onclick="confirmGoogleLogin()">Continue</button>
+    <button class="btn btn-outline" onclick="closeGoogleModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="app-shell">
+  <aside class="sidebar">
+    <div class="brand-mark"><span class="dot"></span> RetailCore</div>
+    <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')"><i class="fa-solid fa-grid-2"></i> Dashboard</button>
+    <button class="nav-item" data-view="billing" onclick="switchView('billing')"><i class="fa-solid fa-cash-register"></i> Billing / POS</button>
+    <button class="nav-item" data-view="inventory" onclick="switchView('inventory')"><i class="fa-solid fa-boxes-stacked"></i> Inventory</button>
+    <button class="nav-item" data-view="lowstock" onclick="switchView('lowstock')"><i class="fa-solid fa-triangle-exclamation"></i> Low Stock</button>
+    <button class="nav-item" data-view="reports" onclick="switchView('reports')"><i class="fa-solid fa-chart-line"></i> Reports</button>
+    <button class="nav-item" data-view="settings" onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> Settings</button>
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="avatar" id="side-avatar">?</div>
+        <div><div class="name" id="side-name">—</div><div class="email" id="side-email">—</div></div>
+      </div>
+      <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view">
+      <div class="topbar">
+        <div><div class="page-title">Namaste, <span id="dash-username">Owner</span> 👋</div><div class="page-sub" id="dash-date"></div></div>
+        <div class="top-actions">
+          <button class="icon-btn" onclick="toggleTheme()"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        </div>
+      </div>
+      <div class="marquee-bar"><span id="marquee-text">Loading alerts…</span></div>
+      <div class="grid-cards">
+        <div class="stat-card a"><div class="ic"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="val" id="stat-revenue">₹0</div><div class="lbl">Today's revenue</div></div>
+        <div class="stat-card b"><div class="ic"><i class="fa-solid fa-boxes-stacked"></i></div><div class="val" id="stat-items">0</div><div class="lbl">Products tracked</div></div>
+        <div class="stat-card c"><div class="ic"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="val" id="stat-low">0</div><div class="lbl">Low stock alerts</div></div>
+        <div class="stat-card d"><div class="ic"><i class="fa-solid fa-receipt"></i></div><div class="val" id="stat-bills">0</div><div class="lbl">Bills today</div></div>
+      </div>
+      <div class="two-col">
+        <div class="panel"><div class="panel-head"><h3>Stock by category</h3></div><canvas id="chart-stock" height="220"></canvas></div>
+        <div class="panel"><div class="panel-head"><h3>Recent transactions</h3></div><div id="recent-bills"></div></div>
+      </div>
+    </div>
+
+    <!-- BILLING -->
+    <div id="view-billing" class="view" style="display:none">
+      <div class="topbar">
+        <div><div class="page-title">Billing / POS</div><div class="page-sub">Tap a product to add it to the bill</div></div>
+        <div class="searchbar"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="pos-search" placeholder="Search products…" oninput="renderPosTiles()"></div>
+      </div>
+      <div class="pos-grid">
+        <div class="panel"><div class="tile-grid" id="pos-tiles"></div></div>
+        <div>
+          <div class="receipt">
+            <h4>RETAILCORE</h4>
+            <div class="rsub" id="receipt-date"></div>
+            <div id="receipt-lines"></div>
+            <div class="receipt-total"><span>TOTAL</span><span id="receipt-total">₹0.00</span></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px" onclick="checkout()"><i class="fa-solid fa-check"></i> Complete sale</button>
+          <button class="btn btn-outline" onclick="clearCart()">Clear cart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="view-inventory" class="view" style="display:none">
+      <div class="topbar">
+        <div><div class="page-title">Inventory</div><div class="page-sub">Manage products, prices &amp; stock</div></div>
+        <div class="top-actions">
+          <div class="searchbar"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="inv-search" placeholder="Search…" oninput="renderInventoryTable()"></div>
+          <button class="btn btn-primary" style="width:auto; padding:10px 18px;" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add product</button>
+        </div>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+          <tbody id="inv-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LOW STOCK -->
+    <div id="view-lowstock" class="view" style="display:none">
+      <div class="topbar"><div><div class="page-title">Low Stock Audit</div><div class="page-sub">Items under threshold — restock soon</div></div></div>
+      <div class="panel"><table><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Stock</th><th>Restock</th></tr></thead><tbody id="lowstock-body"></tbody></table></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="view-reports" class="view" style="display:none">
+      <div class="topbar">
+        <div><div class="page-title">Reports</div><div class="page-sub">Sales performance overview</div></div>
+        <button class="btn btn-primary" style="width:auto; padding:10px 18px;" onclick="exportCsv()"><i class="fa-solid fa-file-arrow-down"></i> Export inventory CSV</button>
+      </div>
+      <div class="two-col">
+        <div class="panel"><div class="panel-head"><h3>Revenue by category</h3></div><canvas id="chart-revenue" height="240"></canvas></div>
+        <div class="panel"><div class="panel-head"><h3>All-time totals</h3></div><div id="report-totals"></div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="view-settings" class="view" style="display:none">
+      <div class="topbar"><div><div class="page-title">Settings</div><div class="page-sub">Preferences &amp; account</div></div></div>
+      <div class="panel" style="max-width:460px">
+        <div class="panel-head"><h3>Appearance</h3></div>
+        <div class="chip-select">
+          <button id="theme-dark-btn" onclick="setTheme('dark')">🌙 Dark</button>
+          <button id="theme-light-btn" onclick="setTheme('light')">☀️ Light</button>
+        </div>
+        <div class="panel-head"><h3>Account</h3></div>
+        <p style="font-size:13.5px; color:var(--text-dim); margin-bottom:14px;" id="settings-account-info"></p>
+        <button class="btn btn-outline" onclick="resetDemoData()"><i class="fa-solid fa-rotate-left"></i> Reset demo data</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-bg" id="product-modal">
+  <div class="modal">
+    <h3 class="disp" id="product-modal-title">Add product</h3>
+    <input type="hidden" id="pm-id">
+    <div class="field"><label>Product name</label><input type="text" id="pm-name" placeholder="Amul Milk 500ml"></div>
+    <div class="form-row">
+      <div class="field"><label>Category</label><input type="text" id="pm-category" placeholder="Dairy"></div>
+      <div class="field"><label>Unit</label><input type="text" id="pm-unit" placeholder="pcs / kg / L"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Price (₹)</label><input type="number" id="pm-price" step="0.01" placeholder="45.00"></div>
+      <div class="field"><label>Stock</label><input type="number" id="pm-stock" step="0.01" placeholder="30"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveProduct()">Save product</button>
+    <button class="btn btn-outline" onclick="closeProductModal()">Cancel</button>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+/* ======================= STATE ======================= */
+let currentUser = null;
+let products = [];
+let bills = [];
+let cart = []; // {id, name, price, qty, unit}
+let currentView = 'dashboard';
+let chartStock, chartRevenue;
+const LOW_STOCK_THRESHOLD = 15;
+
+/* ======================= STORAGE HELPERS ======================= */
+async function storGet(key){
+  try{ const r = await window.storage.get(key, false); return r ? JSON.parse(r.value) : null; }
+  catch(e){ return null; }
+}
+async function storSet(key, value){
+  try{ await window.storage.set(key, JSON.stringify(value), false); }
+  catch(e){ console.error('storage set failed', key, e); }
+}
+
+function defaultProducts(){
+  return [
+    {id:101, name:"Amul Toned Milk 500ml", category:"Dairy", price:28, stock:42, unit:"pcs"},
+    {id:102, name:"Britannia Bread", category:"Bakery", price:45, stock:12, unit:"pcs"},
+    {id:103, name:"Tata Salt 1kg", category:"Grocery", price:24, stock:60, unit:"pcs"},
+    {id:104, name:"Maggi Noodles 70g", category:"Snacks", price:14, stock:8, unit:"pcs"},
+    {id:105, name:"Colgate Toothpaste", category:"Personal Care", price:55, stock:20, unit:"pcs"},
+    {id:106, name:"Basmati Rice", category:"Grocery", price:120, stock:35, unit:"kg"},
+    {id:107, name:"Parle-G Biscuit", category:"Snacks", price:10, stock:5, unit:"pcs"},
+    {id:108, name:"Coca-Cola 750ml", category:"Beverages", price:40, stock:18, unit:"pcs"},
+    {id:109, name:"Surf Excel 1kg", category:"Household", price:130, stock:9, unit:"pcs"},
+    {id:110, name:"Toor Dal 1kg", category:"Grocery", price:145, stock:22, unit:"kg"},
+  ];
+}
+
+async function loadAppData(){
+  let p = await storGet('rc_products_' + currentUser.email);
+  if(!p){ p = defaultProducts(); await storSet('rc_products_' + currentUser.email, p); }
+  products = p;
+  let b = await storGet('rc_bills_' + currentUser.email);
+  bills = b || [];
+}
+async function saveProducts(){ await storSet('rc_products_' + currentUser.email, products); }
+async function saveBills(){ await storSet('rc_bills_' + currentUser.email, bills); }
+
+/* ======================= TOAST ======================= */
+function toast(msg, type='ok'){
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type==='error' ? ' error' : '');
+  el.innerHTML = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 3500);
+}
+
+/* ======================= AUTH ======================= */
+function switchAuthTab(tab){
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('form-signup').style.display = tab==='signup' ? 'block' : 'none';
+}
+
+async function getUsers(){ return (await storGet('rc_users')) || {}; }
+async function setUsers(u){ await storSet('rc_users', u); }
+
+async function handleSignup(e){
+  e.preventDefault();
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim().toLowerCase();
+  const pass = document.getElementById('signup-pass').value;
+  const errEl = document.getElementById('signup-err');
+  errEl.textContent = '';
+  const users = await getUsers();
+  if(users[email]){ errEl.textContent = 'An account with this email already exists.'; return false; }
+  users[email] = {name, email, pass, provider:'email'};
+  await setUsers(users);
+  toast('Account created — signing you in…');
+  await completeLogin(users[email]);
+  return false;
+}
+
+async function handleLogin(e){
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  const users = await getUsers();
+  const u = users[email];
+  if(!u || u.pass !== pass){ errEl.textContent = 'Invalid email or password.'; return false; }
+  await completeLogin(u);
+  return false;
+}
+
+function openGoogleModal(){ document.getElementById('google-modal').classList.add('active'); }
+function closeGoogleModal(){ document.getElementById('google-modal').classList.remove('active'); }
+function loginGoogle(){ openGoogleModal(); }
+async function confirmGoogleLogin(){
+  const name = document.getElementById('google-name').value.trim() || 'Google User';
+  const email = document.getElementById('google-email').value.trim().toLowerCase();
+  if(!email){ toast('Enter an email to continue', 'error'); return; }
+  const users = await getUsers();
+  if(!users[email]) users[email] = {name, email, provider:'google'};
+  await setUsers(users);
+  closeGoogleModal();
+  toast('Signed in with Google (demo mode)');
+  await completeLogin(users[email]);
+}
+
+let pendingOtp = null, pendingPhone = null;
+function openPhoneModal(){ document.getElementById('phone-modal').classList.add('active'); }
+function closePhoneModal(){
+  document.getElementById('phone-modal').classList.remove('active');
+  document.getElementById('phone-step-1').style.display='block';
+  document.getElementById('phone-step-2').style.display='none';
+}
+function sendOtp(){
+  const num = document.getElementById('phone-number').value.trim();
+  if(!num){ toast('Enter a phone number', 'error'); return; }
+  pendingPhone = num;
+  pendingOtp = String(Math.floor(1000 + Math.random()*9000));
+  document.getElementById('phone-step-1').style.display='none';
+  document.getElementById('phone-step-2').style.display='block';
+  toast(`Demo OTP for ${num}: <b>${pendingOtp}</b>`);
+}
+async function verifyOtp(){
+  const entered = document.getElementById('phone-otp').value.trim();
+  if(entered !== pendingOtp){ toast('Incorrect OTP', 'error'); return; }
+  const email = 'phone:' + pendingPhone;
+  const users = await getUsers();
+  if(!users[email]) users[email] = {name:'Phone User', email:pendingPhone, provider:'phone'};
+  await setUsers(users);
+  closePhoneModal();
+  toast('Phone verified — signed in');
+  await completeLogin(users[email]);
+}
+
+async function completeLogin(user){
+  currentUser = user;
+  await storSet('rc_session', user.email);
+  await loadAppData();
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-shell').classList.add('active');
+  const initials = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
+  document.getElementById('side-avatar').textContent = initials;
+  document.getElementById('side-name').textContent = user.name || user.email;
+  document.getElementById('side-email').textContent = user.email;
+  document.getElementById('dash-username').textContent = (user.name || 'Owner').split(' ')[0];
+  document.getElementById('settings-account-info').textContent = `Signed in as ${user.name || ''} (${user.email}) via ${user.provider || 'email'}.`;
+  switchView('dashboard');
+}
+
+async function logout(){
+  currentUser = null;
+  await storSet('rc_session', '');
+  document.getElementById('app-shell').classList.remove('active');
+  document.getElementById('auth-screen').style.display = 'grid';
+}
+
+/* ======================= NAV ======================= */
+function switchView(view){
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.style.display='none');
+  document.getElementById('view-'+view).style.display='block';
+  if(view==='dashboard') renderDashboard();
+  if(view==='billing') renderPosTiles(), renderReceipt();
+  if(view==='inventory') renderInventoryTable();
+  if(view==='lowstock') renderLowStock();
+  if(view==='reports') renderReports();
+}
+
+/* ======================= DASHBOARD ======================= */
+function renderDashboard(){
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const today = new Date().toDateString();
+  const todaysBills = bills.filter(b=> new Date(b.date).toDateString() === today);
+  const revenue = todaysBills.reduce((s,b)=>s+b.total,0);
+  document.getElementById('stat-revenue').textContent = '₹' + revenue.toFixed(2);
+  document.getElementById('stat-items').textContent = products.length;
+  const lowItems = products.filter(p=>p.stock < LOW_STOCK_THRESHOLD);
+  document.getElementById('stat-low').textContent = lowItems.length;
+  document.getElementById('stat-bills').textContent = todaysBills.length;
+
+  const marquee = document.getElementById('marquee-text');
+  if(lowItems.length){
+    marquee.innerHTML = '⚠ Low stock: ' + lowItems.map(p=>`${p.name} (${p.stock} ${p.unit})`).join('   •   ') + '   •   ⚠ Low stock: ' + lowItems.map(p=>`${p.name} (${p.stock} ${p.unit})`).join('   •   ');
+  } else {
+    marquee.textContent = 'All stock levels healthy. No alerts right now.';
+  }
+
+  const recentEl = document.getElementById('recent-bills');
+  if(!bills.length){
+    recentEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-receipt"></i><div>No sales yet — head to Billing to create one.</div></div>';
+  } else {
+    recentEl.innerHTML = bills.slice(-6).reverse().map(b=>`
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <div><b>${b.items.length} item${b.items.length>1?'s':''}</b><div style="color:var(--text-dim);font-size:11.5px;">${new Date(b.date).toLocaleString('en-IN')}</div></div>
+        <div class="mono" style="color:var(--accent-2);font-weight:700;">₹${b.total.toFixed(2)}</div>
+      </div>`).join('');
+  }
+
+  const catMap = {};
+  products.forEach(p=>{ catMap[p.category] = (catMap[p.category]||0) + p.stock; });
+  const ctx = document.getElementById('chart-stock');
+  if(chartStock) chartStock.destroy();
+  chartStock = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:Object.keys(catMap), datasets:[{ label:'Units in stock', data:Object.values(catMap), backgroundColor:'#FFA630', borderRadius:6 }]},
+    options:{ plugins:{legend:{display:false}}, scales:{ y:{ grid:{color:'rgba(255,255,255,0.06)'}}, x:{grid:{display:false}} } }
+  });
+}
+
+/* ======================= BILLING / POS ======================= */
+function renderPosTiles(){
+  const q = (document.getElementById('pos-search').value || '').toLowerCase();
+  const wrap = document.getElementById('pos-tiles');
+  const filtered = products.filter(p=>p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+  if(!filtered.length){ wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box-open"></i><div>No products match.</div></div>'; return; }
+  wrap.innerHTML = filtered.map(p=>`
+    <div class="product-tile" onclick="addToCart(${p.id})">
+      <div class="pname">${p.name}</div>
+      <div class="pcat">${p.category}</div>
+      <div class="pprice">₹${p.price.toFixed(2)}</div>
+      <div class="pstock">${p.stock} ${p.unit} left</div>
+    </div>`).join('');
+}
+function addToCart(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  if(p.stock <= 0){ toast('Out of stock', 'error'); return; }
+  const existing = cart.find(c=>c.id===id);
+  if(existing){
+    if(existing.qty + 1 > p.stock){ toast('Not enough stock', 'error'); return; }
+    existing.qty += 1;
+  } else {
+    cart.push({id:p.id, name:p.name, price:p.price, qty:1, unit:p.unit});
+  }
+  renderReceipt();
+}
+function removeFromCart(id){ cart = cart.filter(c=>c.id!==id); renderReceipt(); }
+function clearCart(){ cart = []; renderReceipt(); }
+function renderReceipt(){
+  document.getElementById('receipt-date').textContent = new Date().toLocaleString('en-IN');
+  const linesEl = document.getElementById('receipt-lines');
+  if(!cart.length){
+    linesEl.innerHTML = '<div class="receipt-empty">Cart is empty<br>Tap a product to begin</div>';
+  } else {
+    linesEl.innerHTML = cart.map(c=>`
+      <div class="receipt-line">
+        <span>${c.name} <span class="rm">x${c.qty}</span></span>
+        <span>₹${(c.price*c.qty).toFixed(2)} <button class="rm-btn" onclick="removeFromCart(${c.id})">✕</button></span>
+      </div>`).join('');
+  }
+  const total = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  document.getElementById('receipt-total').textContent = '₹' + total.toFixed(2);
+}
+async function checkout(){
+  if(!cart.length){ toast('Add items before checking out', 'error'); return; }
+  for(const c of cart){
+    const p = products.find(x=>x.id===c.id);
+    if(!p || p.stock < c.qty){ toast(`Insufficient stock for ${c.name}`, 'error'); return; }
+  }
+  cart.forEach(c=>{ const p = products.find(x=>x.id===c.id); p.stock -= c.qty; });
+  const total = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  bills.push({date:new Date().toISOString(), items:cart.map(c=>({...c})), total});
+  await saveProducts();
+  await saveBills();
+  toast(`Sale complete — ₹${total.toFixed(2)}`);
+  cart = [];
+  renderReceipt();
+  renderPosTiles();
+}
+
+/* ======================= INVENTORY ======================= */
+function renderInventoryTable(){
+  const q = (document.getElementById('inv-search').value || '').toLowerCase();
+  const body = document.getElementById('inv-table-body');
+  const filtered = products.filter(p=>p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+  if(!filtered.length){ body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><div>No products found.</div></div></td></tr>'; return; }
+  body.innerHTML = filtered.map(p=>`
+    <tr>
+      <td class="mono">${p.id}</td>
+      <td>${p.name}</td>
+      <td>${p.category}</td>
+      <td class="mono">₹${p.price.toFixed(2)}</td>
+      <td class="mono">${p.stock} ${p.unit}</td>
+      <td>${p.stock < LOW_STOCK_THRESHOLD ? '<span class="badge low">Low</span>' : '<span class="badge ok">OK</span>'}</td>
+      <td>
+        <button class="mini-btn" onclick="openProductModal(${p.id})"><i class="fa-solid fa-pen"></i></button>
+        <button class="mini-btn danger" onclick="deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+function openProductModal(id){
+  document.getElementById('product-modal').classList.add('active');
+  if(id){
+    const p = products.find(x=>x.id===id);
+    document.getElementById('product-modal-title').textContent = 'Edit product';
+    document.getElementById('pm-id').value = p.id;
+    document.getElementById('pm-name').value = p.name;
+    document.getElementById('pm-category').value = p.category;
+    document.getElementById('pm-unit').value = p.unit;
+    document.getElementById('pm-price').value = p.price;
+    document.getElementById('pm-stock').value = p.stock;
+  } else {
+    document.getElementById('product-modal-title').textContent = 'Add product';
+    ['pm-id','pm-name','pm-category','pm-unit','pm-price','pm-stock'].forEach(id=>document.getElementById(id).value='');
+  }
+}
+function closeProductModal(){ document.getElementById('product-modal').classList.remove('active'); }
+async function saveProduct(){
+  const idVal = document.getElementById('pm-id').value;
+  const name = document.getElementById('pm-name').value.trim();
+  const category = document.getElementById('pm-category').value.trim() || 'General';
+  const unit = document.getElementById('pm-unit').value.trim() || 'pcs';
+  const price = parseFloat(document.getElementById('pm-price').value);
+  const stock = parseFloat(document.getElementById('pm-stock').value);
+  if(!name || isNaN(price) || isNaN(stock)){ toast('Fill in all fields correctly', 'error'); return; }
+  if(idVal){
+    const p = products.find(x=>x.id===parseInt(idVal));
+    Object.assign(p, {name, category, unit, price, stock});
+    toast('Product updated');
+  } else {
+    const newId = products.length ? Math.max(...products.map(p=>p.id))+1 : 101;
+    products.push({id:newId, name, category, unit, price, stock});
+    toast('Product added');
+  }
+  await saveProducts();
+  closeProductModal();
+  renderInventoryTable();
+}
+async function deleteProduct(id){
+  if(!confirm('Remove this product?')) return;
+  products = products.filter(p=>p.id!==id);
+  await saveProducts();
+  renderInventoryTable();
+  toast('Product removed');
+}
+
+/* ======================= LOW STOCK ======================= */
+function renderLowStock(){
+  const body = document.getElementById('lowstock-body');
+  const low = products.filter(p=>p.stock < LOW_STOCK_THRESHOLD);
+  if(!low.length){ body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-circle-check"></i><div>All inventory levels are healthy.</div></div></td></tr>'; return; }
+  body.innerHTML = low.map(p=>`
+    <tr>
+      <td class="mono">${p.id}</td><td>${p.name}</td><td>${p.category}</td>
+      <td class="mono" style="color:var(--danger);font-weight:700;">${p.stock} ${p.unit}</td>
+      <td><button class="mini-btn" onclick="quickRestock(${p.id})"><i class="fa-solid fa-plus"></i> Restock</button></td>
+    </tr>`).join('');
+}
+async function quickRestock(id){
+  const amt = parseFloat(prompt('Quantity to add:', '20'));
+  if(isNaN(amt) || amt<=0) return;
+  const p = products.find(x=>x.id===id);
+  p.stock += amt;
+  await saveProducts();
+  toast(`Restocked ${p.name}`);
+  renderLowStock();
+}
+
+/* ======================= REPORTS ======================= */
+function renderReports(){
+  const catRevenue = {};
+  bills.forEach(b=> b.items.forEach(it=>{
+    const p = products.find(x=>x.id===it.id);
+    const cat = p ? p.category : 'Other';
+    catRevenue[cat] = (catRevenue[cat]||0) + it.price*it.qty;
+  }));
+  const ctx = document.getElementById('chart-revenue');
+  if(chartRevenue) chartRevenue.destroy();
+  chartRevenue = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:Object.keys(catRevenue).length?Object.keys(catRevenue):['No sales yet'],
+      datasets:[{ data:Object.keys(catRevenue).length?Object.values(catRevenue):[1],
+        backgroundColor:['#FFA630','#2DD4A7','#8C97FF','#FF5C7A','#4EC9F5','#F2C14E'] }]},
+    options:{ plugins:{legend:{position:'bottom', labels:{color:getComputedStyle(document.body).getPropertyValue('--text')}}} }
+  });
+  const totalRevenue = bills.reduce((s,b)=>s+b.total,0);
+  const totalItemsSold = bills.reduce((s,b)=>s+b.items.reduce((x,i)=>x+i.qty,0),0);
+  document.getElementById('report-totals').innerHTML = `
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);"><span>Total revenue</span><b class="mono">₹${totalRevenue.toFixed(2)}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);"><span>Total bills</span><b class="mono">${bills.length}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;"><span>Units sold</span><b class="mono">${totalItemsSold}</b></div>`;
+}
+function exportCsv(){
+  let csv = 'ID,Name,Category,Price,Stock,Unit\n';
+  products.forEach(p=> csv += `${p.id},${p.name},${p.category},${p.price.toFixed(2)},${p.stock.toFixed(2)},${p.unit}\n`);
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'retailcore_inventory.csv'; a.click();
+  toast('CSV exported');
+}
+
+/* ======================= SETTINGS / THEME ======================= */
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-dark-btn').classList.toggle('active', t==='dark');
+  document.getElementById('theme-light-btn').classList.toggle('active', t==='light');
+  localStorage_safe(t);
+  if(currentView==='dashboard') renderDashboard();
+  if(currentView==='reports') renderReports();
+}
+function localStorage_safe(t){ /* no browser storage per policy; theme kept in-memory + storage API */
+  if(currentUser) storSet('rc_theme_'+currentUser.email, t);
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur==='dark' ? 'light' : 'dark');
+}
+async function resetDemoData(){
+  if(!confirm('Reset all products and bills for this account?')) return;
+  products = defaultProducts();
+  bills = [];
+  await saveProducts();
+  await saveBills();
+  toast('Demo data reset');
+  switchView('dashboard');
+}
+
+/* ======================= TICKER (signature element) ======================= */
+function buildTicker(){
+  const lines = [
+    ['Amul Milk 500ml','x2','₹56.00'], ['Parle-G Biscuit','x5','₹50.00'],
+    ['Basmati Rice 1kg','x1','₹120.00'], ['Colgate Toothpaste','x1','₹55.00'],
+    ['Tata Salt','x3','₹72.00'], ['Coca-Cola 750ml','x2','₹80.00'],
+    ['Surf Excel 1kg','x1','₹130.00'], ['Maggi Noodles','x4','₹56.00'],
+  ];
+  const doubled = [...lines, ...lines];
+  document.getElementById('ticker-track').innerHTML = doubled.map(l=>`
+    <div class="ticker-line"><span><b>${l[0]}</b> ${l[1]}</span><span class="amt">${l[2]}</span></div>`).join('');
+}
+
+/* ======================= INIT ======================= */
+async function init(){
+  buildTicker();
+  const sessionEmail = await storGet('rc_session');
+  if(sessionEmail){
+    const users = await getUsers();
+    const u = users[sessionEmail];
+    if(u){
+      await completeLogin(u);
+      const savedTheme = await storGet('rc_theme_'+u.email);
+      if(savedTheme) setTheme(savedTheme);
+    }
+  }
+}
+init();
+</script>
+</body>
+</html>
