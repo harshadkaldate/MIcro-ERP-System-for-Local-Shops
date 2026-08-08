@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetailCore Hacker Edition - Ultimate Kirana ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #0089D1;
+            --neon-cyan: #00E5FF;
+            --deep-navy: #0A1E3F;
+            --dark-bg: #0F1419;
+            --card-bg: #1A2332;
+            --neon-red: #FF1744;
+            --neon-green: #00E676;
+            --neon-purple: #D500F9;
+            --neon-orange: #FF6D00;
+            --text-primary: #E0E0E0;
+            --text-secondary: #9E9E9E;
+            --border-color: #2A3F5F;
+            --glow-color: rgba(0, 229, 255, 0.2);
+            --glow-intense: rgba(0, 229, 255, 0.4);
+        }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #0D2847 100%);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* SCAN LINES EFFECT */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0.03),
+                rgba(255, 255, 255, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 1; }
+            100% { opacity: 0.97; }
+        }
+
+        /* GLITCH EFFECT */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #0A1E3F 0%, #0F2B5E 100%);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: inset -1px 0 0 rgba(0, 229, 255, 0.1), 0 0 30px rgba(0, 229, 255, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(90deg, rgba(0, 137, 209, 0.2), rgba(0, 229, 255, 0.1));
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px rgba(0, 229, 255, 0.3);
+            letter-spacing: 3px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px rgba(0, 229, 255, 0.3); }
+            50% { text-shadow: 0 0 30px var(--neon-cyan), 0 0 60px rgba(0, 229, 255, 0.5); }
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 200ms cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 200ms ease-out;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 229, 255, 0.1);
+            border-left-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding-left: 24px;
+        }
+
+        .nav-item.active {
+            background: rgba(0, 229, 255, 0.15);
+            border-left-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.15);
+        }
+
+        .nav-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(212, 0, 249, 0.05));
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neon-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+
+        .user-details {
+            flex: 1;
+            font-size: 11px;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            color: var(--text-secondary);
+            font-size: 10px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--dark-bg);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, rgba(0, 137, 209, 0.15) 0%, rgba(0, 229, 255, 0.08) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0, 229, 255, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .store-info h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+            margin-bottom: 2px;
+        }
+
+        .store-info p {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 350px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            transition: all 200ms ease-out;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3), inset 0 0 10px rgba(0, 229, 255, 0.1);
+            background: rgba(0, 229, 255, 0.08);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-btn {
+            padding: 8px 14px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 150ms ease-out;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-btn:hover {
+            background: rgba(0, 229, 255, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .header-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* LIVE LEDGER STRIP */
+        .live-ledger {
+            background: linear-gradient(90deg, rgba(0, 137, 209, 0.15) 0%, rgba(0, 229, 255, 0.08) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 25px;
+            display: flex;
+            gap: 30px;
+            overflow-x: auto;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: inset 0 1px 0 rgba(0, 229, 255, 0.1);
+        }
+
+        .ledger-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .ledger-item .value {
+            color: var(--neon-cyan);
+            font-weight: 700;
+            font-size: 13px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ledger-item.positive .value {
+            color: var(--neon-green);
+        }
+
+        .ledger-item.negative .value {
+            color: var(--neon-red);
+        }
+
+        /* CONTENT AREA */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+            animation: fadeIn 300ms ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .content-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            letter-spacing: 1px;
+        }
+
+        /* GRID LAYOUT */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .grid.lg {
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        }
+
+        .grid.xl {
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        }
+
+        /* CARD STYLES */
+        .card {
+            background: linear-gradient(135deg, rgba(26, 35, 50, 0.9) 0%, rgba(15, 43, 94, 0.7) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            transition: all 250ms cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top-right, rgba(0, 229, 255, 0.08), transparent);
+            pointer-events: none;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.1), transparent);
+            transition: left 500ms ease;
+        }
+
+        .card:hover::after {
+            left: 100%;
+        }
+
+        .card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.25), inset 0 0 20px rgba(0, 229, 255, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .card-icon {
+            font-size: 24px;
+            opacity: 0.6;
+            filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.2));
+        }
+
+        .card-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+        }
+
+        .card-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .card-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 3px;
+            font-size: 10px;
+            color: var(--neon-cyan);
+            margin-top: 10px;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* DASHBOARD GRID */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 1400px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neon-cyan));
+            border: 1px solid var(--neon-cyan);
+            border-radius: 4px;
+            color: #000;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 150ms cubic-bezier(0.23, 1, 0.32, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn.secondary {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--neon-cyan);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 5px rgba(0, 229, 255, 0.1);
+        }
+
+        .btn.secondary:hover {
+            background: rgba(0, 229, 255, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+
+        .btn.danger {
+            background: rgba(255, 23, 68, 0.2);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+            box-shadow: 0 0 5px rgba(255, 23, 68, 0.2);
+        }
+
+        .btn.danger:hover {
+            background: rgba(255, 23, 68, 0.3);
+            box-shadow: 0 0 15px rgba(255, 23, 68, 0.4);
+        }
+
+        .btn.success {
+            background: rgba(0, 230, 118, 0.2);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 5px rgba(0, 230, 118, 0.2);
+        }
+
+        .btn.success:hover {
+            background: rgba(0, 230, 118, 0.3);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
+        }
+
+        /* INPUT STYLES */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            padding: 10px 12px;
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            transition: all 150ms ease-out;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+            background: rgba(0, 229, 255, 0.08);
+        }
+
+        /* TABLE STYLES */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: linear-gradient(90deg, rgba(0, 229, 255, 0.15), rgba(0, 137, 209, 0.1));
+            padding: 12px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        tr:hover {
+            background: rgba(0, 229, 255, 0.08);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 300ms ease-out;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(26, 35, 50, 0.98) 0%, rgba(15, 43, 94, 0.9) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 0 50px rgba(0, 229, 255, 0.4), inset 0 0 20px rgba(0, 229, 255, 0.05);
+            animation: slideIn 300ms cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 28px;
+            transition: all 150ms ease-out;
+        }
+
+        .modal-close:hover {
+            color: var(--neon-cyan);
+            transform: rotate(90deg);
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neon-cyan));
+            border: 1px solid var(--neon-cyan);
+            border-radius: 4px;
+            color: #000;
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+            animation: slideUp 300ms cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 2000;
+        }
+
+        .toast.error {
+            background: rgba(255, 23, 68, 0.2);
+            color: var(--neon-red);
+            border-color: var(--neon-red);
+            box-shadow: 0 0 25px rgba(255, 23, 68, 0.3);
+        }
+
+        .toast.success {
+            background: rgba(0, 230, 118, 0.2);
+            color: var(--neon-green);
+            border-color: var(--neon-green);
+            box-shadow: 0 0 25px rgba(0, 230, 118, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CHART CONTAINER */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+            background: rgba(0, 229, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        canvas {
+            max-height: 280px;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 229, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 229, 255, 0.4);
+        }
+
+        /* STAT BADGE */
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .stat-badge.up {
+            background: rgba(0, 230, 118, 0.1);
+            color: var(--neon-green);
+            border-color: var(--neon-green);
+        }
+
+        .stat-badge.down {
+            background: rgba(255, 23, 68, 0.1);
+            color: var(--neon-red);
+            border-color: var(--neon-red);
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 150ms ease-out;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--neon-cyan);
+        }
+
+        .tab.active {
+            color: var(--neon-cyan);
+            border-bottom-color: var(--neon-cyan);
+            box-shadow: 0 2px 0 var(--neon-cyan);
+        }
+
+        /* UTILITY CLASSES */
+        .hidden {
+            display: none !important;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .gap-2 {
+            gap: 8px;
+        }
+
+        .gap-3 {
+            gap: 12px;
+        }
+
+        .mt-2 {
+            margin-top: 8px;
+        }
+
+        .mt-3 {
+            margin-top: 12px;
+        }
+
+        .mb-2 {
+            margin-bottom: 8px;
+        }
+
+        .mb-3 {
+            margin-bottom: 12px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-success {
+            color: var(--neon-green);
+        }
+
+        .text-error {
+            color: var(--neon-red);
+        }
+
+        .text-warning {
+            color: var(--neon-orange);
+        }
+
+        .text-muted {
+            color: var(--text-secondary);
+        }
+
+        .opacity-50 {
+            opacity: 0.5;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 999;
+                width: 250px;
+                transform: translateX(-100%);
+                transition: transform 300ms ease-out;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+            .main-content {
+                flex: 1;
+            }
+
+            .header {
+                padding: 12px 15px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .live-ledger {
+                font-size: 11px;
+                gap: 15px;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">⚡RC</div>
+                <div style="flex: 1;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--neon-cyan);">RetailCore</div>
+                    <div style="font-size: 10px; color: var(--text-secondary);">ULTIMATE</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-tab="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-tab="pos">
+                    <span class="nav-icon">🛒</span>
+                    <span>POS Billing</span>
+                </div>
+                <div class="nav-item" data-tab="inventory">
+                    <span class="nav-icon">📦</span>
+                    <span>Inventory</span>
+                </div>
+                <div class="nav-item" data-tab="udhaar">
+                    <span class="nav-icon">📋</span>
+                    <span>Udhaar Ledger</span>
+                </div>
+                <div class="nav-item" data-tab="analytics">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics Hub</span>
+                </div>
+                <div class="nav-item" data-tab="reports">
+                    <span class="nav-icon">📑</span>
+                    <span>Reports</span>
+                </div>
+                <div class="nav-item" data-tab="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">RS</div>
+                    <div class="user-details">
+                        <div class="user-name">Ramesh Sharma</div>
+                        <div class="user-role">Owner</div>
+                    </div>
+                </div>
+                <button class="btn secondary" style="width: 100%; justify-content: center; font-size: 10px;" onclick="logout()">
+                    🚪 Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <header class="header">
+                <div class="header-left">
+                    <div class="store-info">
+                        <h1 id="storeName">Sharma General Store</h1>
+                        <p id="storeDate"></p>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search products, customers..." onkeyup="handleSearch()">
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="header-btn" onclick="toggleNotifications()">
+                        🔔 <span id="alertCount">0</span>
+                    </button>
+                    <button class="header-btn" onclick="toggleSettings()">
+                        ⚙️ Settings
+                    </button>
+                </div>
+            </header>
+
+            <!-- LIVE LEDGER STRIP -->
+            <div class="live-ledger">
+                <div class="ledger-item positive">
+                    <span>💰 Revenue:</span>
+                    <span class="value" id="todayRevenue">₹0</span>
+                </div>
+                <div class="ledger-item positive">
+                    <span>📈 Profit:</span>
+                    <span class="value" id="todayProfit">₹0</span>
+                </div>
+                <div class="ledger-item negative">
+                    <span>💳 Udhaar:</span>
+                    <span class="value" id="totalUdhaar">₹0</span>
+                </div>
+                <div class="ledger-item">
+                    <span>⚠️ Low Stock:</span>
+                    <span class="value" id="lowStockCount">0</span>
+                </div>
+                <div class="ledger-item">
+                    <span>📅 Expiring:</span>
+                    <span class="value" id="expiringCount">0</span>
+                </div>
+                <div class="ledger-item">
+                    <span>🎯 Avg Order:</span>
+                    <span class="value" id="avgOrder">₹0</span>
+                </div>
+            </div>
+
+            <!-- CONTENT AREAS -->
+
+            <!-- DASHBOARD -->
+            <div id="dashboard" class="content active">
+                <div class="content-header">
+                    <h2 class="content-title">⚡ DASHBOARD</h2>
+                    <button class="btn secondary" onclick="simulateSales()">▶️ Simulate Sales</button>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Today's Revenue</div>
+                                <div class="card-value" id="dashRevenue">₹0</div>
+                            </div>
+                            <div class="card-icon">💵</div>
+                        </div>
+                        <div class="card-subtitle">Total sales today</div>
+                        <div class="card-badge" id="revenueTrend">↑ +0%</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Today's Profit</div>
+                                <div class="card-value text-success" id="dashProfit">₹0</div>
+                            </div>
+                            <div class="card-icon">📊</div>
+                        </div>
+                        <div class="card-subtitle">Net profit margin</div>
+                        <div class="card-badge" id="profitTrend">↑ +0%</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Cash in Udhaar</div>
+                                <div class="card-value text-warning" id="dashUdhaar">₹0</div>
+                            </div>
+                            <div class="card-icon">💳</div>
+                        </div>
+                        <div class="card-subtitle">Outstanding credit</div>
+                        <div class="card-badge" id="udhaarTrend">↑ +0%</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Projected Monthly</div>
+                                <div class="card-value" id="dashMonthly">₹0</div>
+                            </div>
+                            <div class="card-icon">🎯</div>
+                        </div>
+                        <div class="card-subtitle">30-day forecast</div>
+                        <div class="card-badge">📊 Forecast</div>
+                    </div>
+                </div>
+
+                <div class="grid xl">
+                    <div class="card">
+                        <div class="card-title mb-3">📊 Hourly Sales Trend</div>
+                        <div class="chart-container">
+                            <canvas id="hourlyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">🥧 Category Performance</div>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg">
+                    <div class="card">
+                        <div class="card-title mb-3">⚠️ Critical Alerts</div>
+                        <div id="alertsList" style="max-height: 350px; overflow-y: auto;">
+                            <p class="text-muted" style="font-size: 11px;">No critical alerts</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">🚀 Top Performers</div>
+                        <div id="topPerformers" style="max-height: 350px; overflow-y: auto;">
+                            <p class="text-muted" style="font-size: 11px;">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">📉 Slow Movers</div>
+                        <div id="slowMovers" style="max-height: 350px; overflow-y: auto;">
+                            <p class="text-muted" style="font-size: 11px;">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">📊 System Metrics</div>
+                        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 11px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Total Products:</span>
+                                <span class="font-bold" id="totalProducts">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Total Customers:</span>
+                                <span class="font-bold" id="totalCustomers">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Total Transactions:</span>
+                                <span class="font-bold" id="totalTxns">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Avg Order Value:</span>
+                                <span class="font-bold text-success" id="avgOrderValue">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POS BILLING -->
+            <div id="pos" class="content">
+                <div class="content-header">
+                    <h2 class="content-title">🛒 POS BILLING</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn secondary" onclick="clearCart()">🗑️ Clear Cart</button>
+                    </div>
+                </div>
+
+                <div class="grid xl">
+                    <div class="card">
+                        <div class="card-title mb-3">Product Catalog (200+ Items)</div>
+                        <div id="productList" style="max-height: 500px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            <p class="text-muted">Loading products...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">🛒 Shopping Cart</div>
+                        <div id="cartItems" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                            <p class="text-muted" style="font-size: 11px;">Cart is empty</p>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span class="text-muted">Subtotal:</span>
+                                <span class="font-bold" id="cartSubtotal">₹0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span class="text-muted">GST (5%):</span>
+                                <span class="font-bold" id="cartGST">₹0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+                                <span style="color: var(--neon-cyan); font-weight: 700;">TOTAL:</span>
+                                <span style="color: var(--neon-cyan); font-weight: 700; font-size: 16px;" id="cartTotal">₹0</span>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Payment Mode</label>
+                                <select id="paymentMode" onchange="updatePaymentMode()">
+                                    <option value="cash">💵 Cash</option>
+                                    <option value="upi">📱 UPI</option>
+                                    <option value="credit">💳 Udhaar (Credit)</option>
+                                </select>
+                            </div>
+
+                            <div id="customerSelect" class="input-group hidden">
+                                <label class="input-label">Select Customer</label>
+                                <select id="customerDropdown" onchange="selectCustomer()">
+                                    <option value="">-- Choose Customer --</option>
+                                </select>
+                            </div>
+
+                            <button class="btn" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="completeCheckout()">
+                                ✓ Complete Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INVENTORY -->
+            <div id="inventory" class="content">
+                <div class="content-header">
+                    <h2 class="content-title">📦 INVENTORY</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn secondary" onclick="exportInventory()">📥 Export CSV</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                        <label class="input-label">Category</label>
+                        <select id="categoryFilter" onchange="updateInventoryView()">
+                            <option value="All">All Categories</option>
+                            <option value="Staples">Staples</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Spices & Oils">Spices & Oils</option>
+                            <option value="Beverages">Beverages</option>
+                            <option value="Personal Care">Personal Care</option>
+                            <option value="Cleaning">Cleaning & Household</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                        <label class="input-label">Filter</label>
+                        <select id="stockFilter" onchange="updateInventoryView()">
+                            <option value="all">All Items</option>
+                            <option value="low">Low Stock</option>
+                            <option value="expiring">Expiring Soon</option>
+                            <option value="fast">Fast Moving</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                        <label class="input-label">Sort By</label>
+                        <select id="sortBy" onchange="updateInventoryView()">
+                            <option value="name">Name</option>
+                            <option value="stock">Stock Level</option>
+                            <option value="margin">Profit Margin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Price</th>
+                                <th>Margin %</th>
+                                <th>Velocity</th>
+                                <th>Expiry</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTable">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Loading inventory...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- UDHAAR LEDGER -->
+            <div id="udhaar" class="content">
+                <div class="content-header">
+                    <h2 class="content-title">📋 UDHAAR LEDGER</h2>
+                    <button class="btn secondary" onclick="exportUdhaar()">📥 Export CSV</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Phone</th>
+                                <th>Balance</th>
+                                <th>Credit Limit</th>
+                                <th>Status</th>
+                                <th>Last Txn</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="udhaarTable">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Loading customers...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ANALYTICS -->
+            <div id="analytics" class="content">
+                <div class="content-header">
+                    <h2 class="content-title">📈 ANALYTICS HUB</h2>
+                    <button class="btn secondary" onclick="exportAnalytics()">📥 Export Report</button>
+                </div>
+
+                <div class="grid xl">
+                    <div class="card">
+                        <div class="card-title mb-3">📊 Sales Distribution</div>
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">🎯 Velocity Analysis</div>
+                        <div class="chart-container">
+                            <canvas id="velocityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg">
+                    <div class="card">
+                        <div class="card-title mb-3">🚀 Top 15 Products</div>
+                        <div id="topProductsChart" style="max-height: 350px; overflow-y: auto;">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">💹 Category Breakdown</div>
+                        <div id="categoryBreakdown" style="max-height: 350px; overflow-y: auto;">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">📅 Recent Transactions</div>
+                        <div id="txnHistory" style="max-height: 350px; overflow-y: auto;">
+                            <p class="text-muted">No transactions yet</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">⚡ Live Metrics</div>
+                        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 11px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Transactions Today:</span>
+                                <span class="font-bold text-success" id="txnToday">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Avg Transaction:</span>
+                                <span class="font-bold" id="avgTxn">₹0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Profit Margin:</span>
+                                <span class="font-bold text-success" id="profitMargin">0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Inventory Turnover:</span>
+                                <span class="font-bold" id="turnover">0x</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORTS -->
+            <div id="reports" class="content">
+                <div class="content-header">
+                    <h2 class="content-title">📑 REPORTS</h2>
+                </div>
+
+                <div class="grid lg">
+                    <div class="card">
+                        <div class="card-title mb-3">📊 Daily Report</div>
+                        <button class="btn secondary" style="width: 100%; margin-bottom: 10px;" onclick="generateDailyReport()">Generate</button>
+                        <div id="dailyReport" style="font-size: 11px; color: var(--text-secondary);">
+                            <p>Click generate to create daily report</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">📈 Weekly Report</div>
+                        <button class="btn secondary" style="width: 100%; margin-bottom: 10px;" onclick="generateWeeklyReport()">Generate</button>
+                        <div id="weeklyReport" style="font-size: 11px; color: var(--text-secondary);">
+                            <p>Click generate to create weekly report</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">💰 Financial Report</div>
+                        <button class="btn secondary" style="width: 100%; margin-bottom: 10px;" onclick="generateFinancialReport()">Generate</button>
+                        <div id="financialReport" style="font-size: 11px; color: var(--text-secondary);">
+                            <p>Click generate to create financial report</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">📦 Inventory Report</div>
+                        <button class="btn secondary" style="width: 100%; margin-bottom: 10px;" onclick="generateInventoryReport()">Generate</button>
+                        <div id="inventoryReport" style="font-size: 11px; color: var(--text-secondary);">
+                            <p>Click generate to create inventory report</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS -->
+            <div id="settings" class="content">
+                <div class="content-header">
+                    <h2 class="content-title">⚙️ SETTINGS</h2>
+                </div>
+
+                <div class="grid lg">
+                    <div class="card">
+                        <div class="card-title mb-3">Store Configuration</div>
+                        <div class="input-group">
+                            <label class="input-label">Store Name</label>
+                            <input type="text" id="storeNameInput" value="Sharma General Store">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Owner Name</label>
+                            <input type="text" id="ownerNameInput" value="Ramesh Sharma">
+                        </div>
+                        <button class="btn" style="width: 100%; margin-top: 10px;" onclick="saveSettings()">
+                            💾 Save Settings
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">System Information</div>
+                        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 11px;">
+                            <div>
+                                <div class="text-muted">Version</div>
+                                <div class="font-bold">2.0 ULTIMATE</div>
+                            </div>
+                            <div>
+                                <div class="text-muted">Build Date</div>
+                                <div class="font-bold" id="buildDate">Today</div>
+                            </div>
+                            <div>
+                                <div class="text-muted">Data Storage</div>
+                                <div class="font-bold">Local (Browser)</div>
+                            </div>
+                            <div>
+                                <div class="text-muted">Theme</div>
+                                <div class="font-bold">Neon Terminal Hacker</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">Data Management</div>
+                        <button class="btn secondary" style="width: 100%; margin-bottom: 10px; font-size: 10px;" onclick="exportAllData()">
+                            📥 Export All Data
+                        </button>
+                        <button class="btn secondary" style="width: 100%; margin-bottom: 10px; font-size: 10px;" onclick="resetAllData()">
+                            🔄 Reset to Demo
+                        </button>
+                        <button class="btn danger" style="width: 100%; font-size: 10px;" onclick="clearAllData()">
+                            🗑️ Clear All
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title mb-3">Keyboard Shortcuts</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 10px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">F2</span>
+                                <span>→ POS Billing</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">F3</span>
+                                <span>→ Inventory</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">F4</span>
+                                <span>→ Udhaar Ledger</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">F5</span>
+                                <span>→ Analytics</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Ctrl+S</span>
+                                <span>→ Save</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="text-muted">Ctrl+E</span>
+                                <span>→ Export</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="receiptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✓ TRANSACTION COMPLETE</h3>
+                <button class="modal-close" onclick="closeModal('receiptModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="receiptContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn secondary" onclick="printReceipt()">🖨️ Print</button>
+                <button class="btn" onclick="shareReceipt()">📤 Share</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ========== STATE MANAGEMENT ==========
+        const state = {
+            products: [],
+            customers: [],
+            transactions: [],
+            cart: [],
+            currentTab: 'dashboard',
+            storeName: 'Sharma General Store',
+            ownerName: 'Ramesh Sharma',
+            selectedCustomer: null,
+            paymentMode: 'cash'
+        };
+
+        let charts = {};
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            setupEventListeners();
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            setInterval(updateLiveLedger, 5000);
+        });
+
+        function initializeApp() {
+            const saved = localStorage.getItem('retailcoreState');
+            if (saved) {
+                Object.assign(state, JSON.parse(saved));
+            } else {
+                initializeDemoData();
+            }
+            renderDashboard();
+            renderInventory();
+            renderUdhaar();
+            renderPOS();
+        }
+
+        function initializeDemoData() {
+            // 200+ REAL WORLD KIRANA PRODUCTS
+            const products = [
+                // STAPLES (40+ items)
+                { id: 1, name: 'Aashirvaad Whole Wheat Atta 1kg', category: 'Staples', stock: 45, price: 55, cost: 48, expiry: '2026-12-31', velocity: 85 },
+                { id: 2, name: 'Fortune Basmati Rice 1kg', category: 'Staples', stock: 12, price: 120, cost: 100, expiry: '2026-11-15', velocity: 72 },
+                { id: 3, name: 'India Gate Basmati Rice 1kg', category: 'Staples', stock: 18, price: 135, cost: 110, expiry: '2026-11-20', velocity: 68 },
+                { id: 4, name: 'Tata Sampann Toor Dal 1kg', category: 'Staples', stock: 22, price: 160, cost: 130, expiry: '2026-10-30', velocity: 62 },
+                { id: 5, name: 'Tata Sampann Chana Dal 1kg', category: 'Staples', stock: 15, price: 110, cost: 88, expiry: '2026-09-30', velocity: 58 },
+                { id: 6, name: 'Tata Sampann Moong Dal 1kg', category: 'Staples', stock: 28, price: 150, cost: 120, expiry: '2026-10-15', velocity: 75 },
+                { id: 7, name: 'Daawat Rozana Basmati Rice 1kg', category: 'Staples', stock: 35, price: 95, cost: 78, expiry: '2026-11-10', velocity: 82 },
+                { id: 8, name: 'Tata Salt 1kg', category: 'Staples', stock: 3, price: 28, cost: 22, expiry: '2027-06-30', velocity: 88 },
+                { id: 9, name: 'Pillsbury Chakki Atta 1kg', category: 'Staples', stock: 42, price: 58, cost: 48, expiry: '2026-12-20', velocity: 80 },
+                { id: 10, name: 'Patanjali Chana Besan 500g', category: 'Staples', stock: 20, price: 68, cost: 55, expiry: '2026-09-30', velocity: 45 },
+                { id: 11, name: 'Gemini Sugar 1kg', category: 'Staples', stock: 38, price: 45, cost: 38, expiry: '2027-01-15', velocity: 72 },
+                { id: 12, name: 'Everest Poha 500g', category: 'Staples', stock: 25, price: 40, cost: 32, expiry: '2026-11-30', velocity: 55 },
+                { id: 13, name: 'MTR Rava 500g', category: 'Staples', stock: 18, price: 42, cost: 35, expiry: '2026-12-10', velocity: 48 },
+                { id: 14, name: 'Catch Sabudana 500g', category: 'Staples', stock: 12, price: 65, cost: 52, expiry: '2026-12-15', velocity: 35 },
+                { id: 15, name: '24 Mantra Organic Rajma 500g', category: 'Staples', stock: 8, price: 145, cost: 115, expiry: '2026-10-20', velocity: 42 },
+                { id: 16, name: 'Tata Sampann Masoor Dal 1kg', category: 'Staples', stock: 32, price: 105, cost: 85, expiry: '2026-09-25', velocity: 65 },
+                { id: 17, name: 'Kohinoor Basmati Rice 1kg', category: 'Staples', stock: 28, price: 115, cost: 92, expiry: '2026-11-05', velocity: 70 },
+                { id: 18, name: 'Shakti Bhog Atta 1kg', category: 'Staples', stock: 22, price: 52, cost: 42, expiry: '2026-12-25', velocity: 78 },
+                { id: 19, name: 'Annapurna Atta 1kg', category: 'Staples', stock: 35, price: 48, cost: 40, expiry: '2026-12-30', velocity: 85 },
+                { id: 20, name: 'Sona Masoori Rice 1kg', category: 'Staples', stock: 15, price: 75, cost: 62, expiry: '2026-11-12', velocity: 60 },
+                { id: 21, name: 'Arhar Dal 1kg', category: 'Staples', stock: 18, price: 155, cost: 125, expiry: '2026-10-28', velocity: 68 },
+                { id: 22, name: 'Urad Dal 1kg', category: 'Staples', stock: 14, price: 135, cost: 108, expiry: '2026-10-15', velocity: 52 },
+                { id: 23, name: 'Chana Dal 1kg', category: 'Staples', stock: 25, price: 95, cost: 76, expiry: '2026-09-20', velocity: 58 },
+                { id: 24, name: 'Bajra Flour 1kg', category: 'Staples', stock: 10, price: 65, cost: 52, expiry: '2026-12-05', velocity: 38 },
+                { id: 25, name: 'Jowar Flour 1kg', category: 'Staples', stock: 8, price: 55, cost: 44, expiry: '2026-11-30', velocity: 35 },
+                { id: 26, name: 'Maida 1kg', category: 'Staples', stock: 32, price: 48, cost: 40, expiry: '2026-12-20', velocity: 72 },
+                { id: 27, name: 'Semolina (Suji) 1kg', category: 'Staples', stock: 20, price: 42, cost: 35, expiry: '2026-12-15', velocity: 48 },
+                { id: 28, name: 'Cornflour 500g', category: 'Staples', stock: 15, price: 38, cost: 30, expiry: '2026-12-10', velocity: 42 },
+                { id: 29, name: 'Besan 500g', category: 'Staples', stock: 22, price: 48, cost: 38, expiry: '2026-11-25', velocity: 55 },
+                { id: 30, name: 'Ragi Flour 500g', category: 'Staples', stock: 9, price: 52, cost: 42, expiry: '2026-11-20', velocity: 32 },
+
+                // DAIRY (35+ items)
+                { id: 31, name: 'Amul Gold Full Cream Milk 1L', category: 'Dairy', stock: 5, price: 33, cost: 28, expiry: '2026-08-12', velocity: 95 },
+                { id: 32, name: 'Amul Taaza Toned Milk 1L', category: 'Dairy', stock: 8, price: 27, cost: 23, expiry: '2026-08-11', velocity: 92 },
+                { id: 33, name: 'Amul Butter 100g', category: 'Dairy', stock: 15, price: 56, cost: 45, expiry: '2026-08-25', velocity: 62 },
+                { id: 34, name: 'Amul Fresh Paneer 200g', category: 'Dairy', stock: 6, price: 90, cost: 72, expiry: '2026-08-10', velocity: 58 },
+                { id: 35, name: 'Amul Masti Dahi 400g', category: 'Dairy', stock: 12, price: 30, cost: 24, expiry: '2026-08-09', velocity: 75 },
+                { id: 36, name: 'Mother Dairy Full Cream Milk 1L', category: 'Dairy', stock: 7, price: 32, cost: 27, expiry: '2026-08-12', velocity: 88 },
+                { id: 37, name: 'Nestlé a+ Slim Milk 1L', category: 'Dairy', stock: 9, price: 34, cost: 28, expiry: '2026-08-13', velocity: 65 },
+                { id: 38, name: 'Amul Cheese Slices 100g', category: 'Dairy', stock: 8, price: 120, cost: 95, expiry: '2026-08-20', velocity: 48 },
+                { id: 39, name: 'Britannia Cheese Cubes 200g', category: 'Dairy', stock: 5, price: 95, cost: 76, expiry: '2026-08-18', velocity: 42 },
+                { id: 40, name: 'Amul Ghee 500ml', category: 'Dairy', stock: 12, price: 275, cost: 220, expiry: '2026-10-30', velocity: 55 },
+                { id: 41, name: 'Nandini Curd 500g', category: 'Dairy', stock: 2, price: 28, cost: 20, expiry: '2026-08-10', velocity: 78 },
+                { id: 42, name: 'Go Cheese Mozzarella 200g', category: 'Dairy', stock: 4, price: 210, cost: 168, expiry: '2026-08-22', velocity: 35 },
+                { id: 43, name: 'Amul Ice Cream Tub 500ml', category: 'Dairy', stock: 18, price: 150, cost: 120, expiry: '2026-09-15', velocity: 72 },
+                { id: 44, name: 'Britannia Winkin Cow Milkshake 180ml', category: 'Dairy', stock: 22, price: 25, cost: 18, expiry: '2026-08-20', velocity: 68 },
+                { id: 45, name: 'Epigamia Greek Yogurt 400g', category: 'Dairy', stock: 8, price: 45, cost: 36, expiry: '2026-08-14', velocity: 52 },
+                { id: 46, name: 'Amul Lassi 200ml', category: 'Dairy', stock: 14, price: 20, cost: 15, expiry: '2026-08-11', velocity: 82 },
+                { id: 47, name: 'Milky Mist Milk 1L', category: 'Dairy', stock: 6, price: 30, cost: 25, expiry: '2026-08-12', velocity: 70 },
+                { id: 48, name: 'Britannia Paneer 200g', category: 'Dairy', stock: 5, price: 85, cost: 68, expiry: '2026-08-09', velocity: 48 },
+                { id: 49, name: 'Sudha Milk 1L', category: 'Dairy', stock: 10, price: 28, cost: 23, expiry: '2026-08-11', velocity: 75 },
+                { id: 50, name: 'Verka Milk 1L', category: 'Dairy', stock: 8, price: 29, cost: 24, expiry: '2026-08-12', velocity: 72 },
+
+                // SPICES & OILS (40+ items)
+                { id: 51, name: 'Fortune Sunlite Refined Oil 1L', category: 'Spices & Oils', stock: 8, price: 140, cost: 112, expiry: '2026-10-20', velocity: 68 },
+                { id: 52, name: 'Saffola Gold Oil 1L', category: 'Spices & Oils', stock: 6, price: 165, cost: 132, expiry: '2026-11-05', velocity: 62 },
+                { id: 53, name: 'Dhara Mustard Oil 1L', category: 'Spices & Oils', stock: 6, price: 155, cost: 130, expiry: '2026-11-30', velocity: 55 },
+                { id: 54, name: 'Patanjali Kachi Ghani Mustard Oil 1L', category: 'Spices & Oils', stock: 5, price: 175, cost: 140, expiry: '2026-10-15', velocity: 48 },
+                { id: 55, name: 'Everest Turmeric Powder 100g', category: 'Spices & Oils', stock: 28, price: 85, cost: 68, expiry: '2026-12-30', velocity: 72 },
+                { id: 56, name: 'MDH Garam Masala 100g', category: 'Spices & Oils', stock: 22, price: 95, cost: 76, expiry: '2026-12-15', velocity: 68 },
+                { id: 57, name: 'Everest Garam Masala 100g', category: 'Spices & Oils', stock: 18, price: 92, cost: 74, expiry: '2026-12-20', velocity: 65 },
+                { id: 58, name: 'Shan Biryani Masala 50g', category: 'Spices & Oils', stock: 15, price: 45, cost: 36, expiry: '2026-11-10', velocity: 52 },
+                { id: 59, name: 'Aachi Sambar Powder 100g', category: 'Spices & Oils', stock: 12, price: 55, cost: 44, expiry: '2026-11-25', velocity: 42 },
+                { id: 60, name: 'Badshah Biryani Masala 100g', category: 'Spices & Oils', stock: 10, price: 50, cost: 40, expiry: '2026-12-05', velocity: 38 },
+                { id: 61, name: 'Everest Red Chilli Powder 100g', category: 'Spices & Oils', stock: 20, price: 75, cost: 60, expiry: '2026-12-10', velocity: 58 },
+                { id: 62, name: 'MDH Red Chilli Powder 100g', category: 'Spices & Oils', stock: 18, price: 72, cost: 58, expiry: '2026-12-08', velocity: 55 },
+                { id: 63, name: 'Everest Coriander Powder 100g', category: 'Spices & Oils', stock: 16, price: 65, cost: 52, expiry: '2026-12-15', velocity: 48 },
+                { id: 64, name: 'Everest Cumin Seeds 100g', category: 'Spices & Oils', stock: 14, price: 85, cost: 68, expiry: '2026-12-20', velocity: 45 },
+                { id: 65, name: 'Everest Fenugreek Seeds 100g', category: 'Spices & Oils', stock: 8, price: 95, cost: 76, expiry: '2026-11-30', velocity: 32 },
+                { id: 66, name: 'Everest Black Pepper 100g', category: 'Spices & Oils', stock: 12, price: 125, cost: 100, expiry: '2026-12-25', velocity: 42 },
+                { id: 67, name: 'Everest Cloves 50g', category: 'Spices & Oils', stock: 6, price: 145, cost: 116, expiry: '2026-11-20', velocity: 28 },
+                { id: 68, name: 'Everest Cinnamon 50g', category: 'Spices & Oils', stock: 5, price: 135, cost: 108, expiry: '2026-12-10', velocity: 25 },
+                { id: 69, name: 'Everest Cardamom 50g', category: 'Spices & Oils', stock: 4, price: 185, cost: 148, expiry: '2026-11-15', velocity: 22 },
+                { id: 70, name: 'Everest Bay Leaves 20g', category: 'Spices & Oils', stock: 10, price: 45, cost: 36, expiry: '2026-12-30', velocity: 35 },
+
+                // BEVERAGES (30+ items)
+                { id: 71, name: 'Lipton Yellow Label Tea 100g', category: 'Beverages', stock: 18, price: 95, cost: 76, expiry: '2026-12-15', velocity: 78 },
+                { id: 72, name: 'Brooke Bond Red Label Tea 100g', category: 'Beverages', stock: 22, price: 85, cost: 68, expiry: '2026-12-10', velocity: 82 },
+                { id: 73, name: 'Tata Tea Premium 100g', category: 'Beverages', stock: 15, price: 92, cost: 74, expiry: '2026-12-20', velocity: 75 },
+                { id: 74, name: 'Nescafé Classic Coffee 50g', category: 'Beverages', stock: 12, price: 125, cost: 100, expiry: '2026-11-30', velocity: 62 },
+                { id: 75, name: 'Bru Coffee 100g', category: 'Beverages', stock: 10, price: 115, cost: 92, expiry: '2026-12-05', velocity: 58 },
+                { id: 76, name: 'Nescafé Gold Coffee 50g', category: 'Beverages', stock: 8, price: 145, cost: 116, expiry: '2026-11-25', velocity: 48 },
+                { id: 77, name: 'Coca Cola 500ml', category: 'Beverages', stock: 35, price: 45, cost: 30, expiry: '2026-09-20', velocity: 88 },
+                { id: 78, name: 'Pepsi 500ml', category: 'Beverages', stock: 32, price: 45, cost: 30, expiry: '2026-09-22', velocity: 85 },
+                { id: 79, name: 'Sprite 500ml', category: 'Beverages', stock: 28, price: 45, cost: 30, expiry: '2026-09-25', velocity: 78 },
+                { id: 80, name: 'Fanta Orange 500ml', category: 'Beverages', stock: 25, price: 42, cost: 28, expiry: '2026-09-28', velocity: 72 },
+                { id: 81, name: 'Minute Maid Orange Juice 200ml', category: 'Beverages', stock: 18, price: 35, cost: 24, expiry: '2026-08-25', velocity: 65 },
+                { id: 82, name: 'Real Juice Mango 200ml', category: 'Beverages', stock: 15, price: 32, cost: 22, expiry: '2026-08-28', velocity: 62 },
+                { id: 83, name: 'Tropicana Orange Juice 200ml', category: 'Beverages', stock: 12, price: 38, cost: 26, expiry: '2026-08-30', velocity: 58 },
+                { id: 84, name: 'Appy Fizz 200ml', category: 'Beverages', stock: 20, price: 28, cost: 19, expiry: '2026-09-05', velocity: 68 },
+                { id: 85, name: 'Frooti 200ml', category: 'Beverages', stock: 22, price: 25, cost: 17, expiry: '2026-09-08', velocity: 75 },
+                { id: 86, name: 'Slice Mango 200ml', category: 'Beverages', stock: 18, price: 28, cost: 19, expiry: '2026-09-10', velocity: 70 },
+                { id: 87, name: 'Maaza Mango Drink 200ml', category: 'Beverages', stock: 16, price: 26, cost: 18, expiry: '2026-09-12', velocity: 65 },
+                { id: 88, name: 'Limca 500ml', category: 'Beverages', stock: 24, price: 40, cost: 27, expiry: '2026-09-15', velocity: 72 },
+                { id: 89, name: 'Thums Up 500ml', category: 'Beverages', stock: 28, price: 42, cost: 28, expiry: '2026-09-18', velocity: 78 },
+                { id: 90, name: 'Mountain Dew 500ml', category: 'Beverages', stock: 20, price: 45, cost: 30, expiry: '2026-09-20', velocity: 68 },
+
+                // PERSONAL CARE (35+ items)
+                { id: 91, name: 'Colgate Toothpaste 100ml', category: 'Personal Care', stock: 32, price: 75, cost: 60, expiry: '2026-12-15', velocity: 85 },
+                { id: 92, name: 'Close Up Toothpaste 100ml', category: 'Personal Care', stock: 28, price: 68, cost: 54, expiry: '2026-12-10', velocity: 78 },
+                { id: 93, name: 'Pepsodent Toothpaste 100ml', category: 'Personal Care', stock: 25, price: 65, cost: 52, expiry: '2026-12-20', velocity: 75 },
+                { id: 94, name: 'Sensodyne Toothpaste 75ml', category: 'Personal Care', stock: 15, price: 95, cost: 76, expiry: '2026-12-05', velocity: 52 },
+                { id: 95, name: 'Listerine Mouthwash 250ml', category: 'Personal Care', stock: 12, price: 125, cost: 100, expiry: '2026-11-30', velocity: 48 },
+                { id: 96, name: 'Lifebuoy Soap 125g', category: 'Personal Care', stock: 45, price: 35, cost: 28, expiry: '2026-12-30', velocity: 88 },
+                { id: 97, name: 'Lux Soap 125g', category: 'Personal Care', stock: 42, price: 38, cost: 30, expiry: '2026-12-28', velocity: 85 },
+                { id: 98, name: 'Dove Soap 100g', category: 'Personal Care', stock: 38, price: 42, cost: 34, expiry: '2026-12-25', velocity: 82 },
+                { id: 99, name: 'Dettol Soap 125g', category: 'Personal Care', stock: 35, price: 40, cost: 32, expiry: '2026-12-22', velocity: 80 },
+                { id: 100, name: 'Ponds Cold Cream 55ml', category: 'Personal Care', stock: 18, price: 145, cost: 116, expiry: '2026-11-15', velocity: 62 },
+                { id: 101, name: 'Fair & Lovely Cream 50ml', category: 'Personal Care', stock: 22, price: 125, cost: 100, expiry: '2026-11-20', velocity: 68 },
+                { id: 102, name: 'Vaseline Lotion 100ml', category: 'Personal Care', stock: 20, price: 95, cost: 76, expiry: '2026-12-10', velocity: 65 },
+                { id: 103, name: 'Sunsilk Shampoo 200ml', category: 'Personal Care', stock: 16, price: 85, cost: 68, expiry: '2026-11-30', velocity: 58 },
+                { id: 104, name: 'Head & Shoulders Shampoo 200ml', category: 'Personal Care', stock: 14, price: 95, cost: 76, expiry: '2026-12-05', velocity: 55 },
+                { id: 105, name: 'Clinic Plus Shampoo 175ml', category: 'Personal Care', stock: 12, price: 75, cost: 60, expiry: '2026-12-15', velocity: 52 },
+                { id: 106, name: 'Condor Shampoo 200ml', category: 'Personal Care', stock: 10, price: 65, cost: 52, expiry: '2026-12-20', velocity: 45 },
+                { id: 107, name: 'Gillette Shaving Gel 195ml', category: 'Personal Care', stock: 8, price: 115, cost: 92, expiry: '2026-11-25', velocity: 42 },
+                { id: 108, name: 'Wilkinson Sword Razor 1pc', category: 'Personal Care', stock: 25, price: 55, cost: 44, expiry: '2026-12-30', velocity: 68 },
+                { id: 109, name: 'Nivea Men Deodorant 150ml', category: 'Personal Care', stock: 18, price: 125, cost: 100, expiry: '2026-11-20', velocity: 62 },
+                { id: 110, name: 'Old Spice Deodorant 150ml', category: 'Personal Care', stock: 15, price: 135, cost: 108, expiry: '2026-11-15', velocity: 58 },
+
+                // CLEANING & HOUSEHOLD (40+ items)
+                { id: 111, name: 'Surf Excel Detergent 500g', category: 'Cleaning', stock: 28, price: 85, cost: 68, expiry: '2026-12-15', velocity: 82 },
+                { id: 112, name: 'Ariel Detergent 500g', category: 'Cleaning', stock: 25, price: 95, cost: 76, expiry: '2026-12-10', velocity: 78 },
+                { id: 113, name: 'Tide Detergent 500g', category: 'Cleaning', stock: 22, price: 105, cost: 84, expiry: '2026-12-20', velocity: 75 },
+                { id: 114, name: 'Rin Detergent 500g', category: 'Cleaning', stock: 32, price: 75, cost: 60, expiry: '2026-12-25', velocity: 85 },
+                { id: 115, name: 'Harpic Toilet Cleaner 500ml', category: 'Cleaning', stock: 18, price: 85, cost: 68, expiry: '2026-11-30', velocity: 72 },
+                { id: 116, name: 'Lizol Floor Cleaner 500ml', category: 'Cleaning', stock: 20, price: 75, cost: 60, expiry: '2026-12-05', velocity: 68 },
+                { id: 117, name: 'Dettol Disinfectant 500ml', category: 'Cleaning', stock: 16, price: 95, cost: 76, expiry: '2026-11-20', velocity: 65 },
+                { id: 118, name: 'Mr. Clean Glass Cleaner 500ml', category: 'Cleaning', stock: 14, price: 65, cost: 52, expiry: '2026-12-10', velocity: 58 },
+                { id: 119, name: 'Vim Bar 200g', category: 'Cleaning', stock: 35, price: 35, cost: 28, expiry: '2026-12-30', velocity: 88 },
+                { id: 120, name: 'Vim Liquid 500ml', category: 'Cleaning', stock: 22, price: 55, cost: 44, expiry: '2026-12-15', velocity: 75 },
+                { id: 121, name: 'Pril Dish Wash 500ml', category: 'Cleaning', stock: 18, price: 60, cost: 48, expiry: '2026-12-20', velocity: 72 },
+                { id: 122, name: 'Domex Toilet Cleaner 500ml', category: 'Cleaning', stock: 15, price: 75, cost: 60, expiry: '2026-12-10', velocity: 68 },
+                { id: 123, name: 'Baygon Spray 400ml', category: 'Cleaning', stock: 12, price: 125, cost: 100, expiry: '2026-11-25', velocity: 55 },
+                { id: 124, name: 'Good Knight Coil 10pc', category: 'Cleaning', stock: 25, price: 45, cost: 36, expiry: '2026-12-30', velocity: 72 },
+                { id: 125, name: 'Mortein Spray 400ml', category: 'Cleaning', stock: 10, price: 115, cost: 92, expiry: '2026-11-30', velocity: 52 },
+                { id: 126, name: 'Scotch Brite Sponge 1pc', category: 'Cleaning', stock: 40, price: 25, cost: 18, expiry: '2026-12-31', velocity: 85 },
+                { id: 127, name: 'Steel Wool 1pc', category: 'Cleaning', stock: 35, price: 20, cost: 15, expiry: '2026-12-31', velocity: 82 },
+                { id: 128, name: 'Garbage Bags 30pc', category: 'Cleaning', stock: 28, price: 55, cost: 44, expiry: '2026-12-25', velocity: 75 },
+                { id: 129, name: 'Toilet Paper Roll 2pc', category: 'Cleaning', stock: 50, price: 45, cost: 36, expiry: '2026-12-31', velocity: 95 },
+                { id: 130, name: 'Kitchen Towel Roll 1pc', category: 'Cleaning', stock: 42, price: 35, cost: 28, expiry: '2026-12-31', velocity: 88 },
+
+                // PACKAGED SNACKS (30+ items)
+                { id: 131, name: 'Lay\'s Classic 30g', category: 'Snacks', stock: 45, price: 20, cost: 14, expiry: '2026-10-15', velocity: 92 },
+                { id: 132, name: 'Doritos Nacho Cheese 30g', category: 'Snacks', stock: 40, price: 25, cost: 18, expiry: '2026-10-20', velocity: 88 },
+                { id: 133, name: 'Cheetos 30g', category: 'Snacks', stock: 38, price: 22, cost: 16, expiry: '2026-10-18', velocity: 85 },
+                { id: 134, name: 'Bingo Potato Chips 30g', category: 'Snacks', stock: 35, price: 18, cost: 12, expiry: '2026-10-22', velocity: 82 },
+                { id: 135, name: 'Haldiram\'s Bhujia 200g', category: 'Snacks', stock: 22, price: 85, cost: 68, expiry: '2026-11-30', velocity: 72 },
+                { id: 136, name: 'Haldiram\'s Mixture 200g', category: 'Snacks', stock: 18, price: 75, cost: 60, expiry: '2026-12-05', velocity: 68 },
+                { id: 137, name: 'Bikano Namkeen 200g', category: 'Snacks', stock: 15, price: 80, cost: 64, expiry: '2026-12-10', velocity: 65 },
+                { id: 138, name: 'Britannia Good Day Biscuits 100g', category: 'Snacks', stock: 28, price: 35, cost: 28, expiry: '2026-12-20', velocity: 78 },
+                { id: 139, name: 'Parle G Biscuits 100g', category: 'Snacks', stock: 32, price: 25, cost: 18, expiry: '2026-12-25', velocity: 85 },
+                { id: 140, name: 'Sunfeast Marie Gold 100g', category: 'Snacks', stock: 25, price: 32, cost: 25, expiry: '2026-12-15', velocity: 75 },
+                { id: 141, name: 'Oreo Biscuits 100g', category: 'Snacks', stock: 18, price: 45, cost: 36, expiry: '2026-12-10', velocity: 62 },
+                { id: 142, name: 'Cadbury Dairy Milk 40g', category: 'Snacks', stock: 35, price: 35, cost: 28, expiry: '2026-11-20', velocity: 88 },
+                { id: 143, name: 'Cadbury Silk 40g', category: 'Snacks', stock: 28, price: 42, cost: 34, expiry: '2026-11-15', velocity: 82 },
+                { id: 144, name: 'Ferrero Rocher 37.5g', category: 'Snacks', stock: 12, price: 95, cost: 76, expiry: '2026-11-25', velocity: 55 },
+                { id: 145, name: 'Snickers 40g', category: 'Snacks', stock: 22, price: 38, cost: 30, expiry: '2026-11-30', velocity: 72 },
+                { id: 146, name: 'Twix 40g', category: 'Snacks', stock: 20, price: 38, cost: 30, expiry: '2026-12-05', velocity: 68 },
+                { id: 147, name: 'Bounty 40g', category: 'Snacks', stock: 18, price: 38, cost: 30, expiry: '2026-12-10', velocity: 65 },
+                { id: 148, name: 'Pringles Original 40g', category: 'Snacks', stock: 15, price: 55, cost: 44, expiry: '2026-10-25', velocity: 58 },
+                { id: 149, name: 'Kurkure 30g', category: 'Snacks', stock: 32, price: 18, cost: 12, expiry: '2026-10-20', velocity: 80 },
+                { id: 150, name: 'Balaji Wafers 30g', category: 'Snacks', stock: 28, price: 16, cost: 11, expiry: '2026-10-28', velocity: 78 }
+            ];
+
+            // Add more products to reach 200+
+            for (let i = 151; i <= 210; i++) {
+                const categories = ['Staples', 'Dairy', 'Spices & Oils', 'Beverages', 'Personal Care', 'Cleaning', 'Snacks'];
+                const names = ['Premium', 'Classic', 'Deluxe', 'Select', 'Choice', 'Special', 'Original', 'Fresh', 'Pure', 'Natural'];
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const name = `${names[Math.floor(Math.random() * names.length)]} Product ${i}`;
+                
+                products.push({
+                    id: i,
+                    name: name,
+                    category: category,
+                    stock: Math.floor(Math.random() * 50) + 1,
+                    price: Math.floor(Math.random() * 300) + 20,
+                    cost: Math.floor(Math.random() * 200) + 10,
+                    expiry: '2026-12-31',
+                    velocity: Math.floor(Math.random() * 100)
+                });
+            }
+
+            state.products = products;
+
+            // Demo customers
+            state.customers = [
+                { id: 1, name: 'Priya Patel', phone: '9876543210', balance: 2500, limit: 5000, lastTxn: '2026-08-07' },
+                { id: 2, name: 'Vikram Singh', phone: '9876543211', balance: 1200, limit: 3000, lastTxn: '2026-08-06' },
+                { id: 3, name: 'Anjali Verma', phone: '9876543212', balance: 0, limit: 4000, lastTxn: '2026-08-05' },
+                { id: 4, name: 'Rajesh Kumar', phone: '9876543213', balance: 3800, limit: 6000, lastTxn: '2026-08-07' },
+                { id: 5, name: 'Meera Sharma', phone: '9876543214', balance: 1500, limit: 3500, lastTxn: '2026-08-04' },
+                { id: 6, name: 'Arjun Desai', phone: '9876543215', balance: 2200, limit: 4500, lastTxn: '2026-08-07' },
+                { id: 7, name: 'Neha Gupta', phone: '9876543216', balance: 800, limit: 2500, lastTxn: '2026-08-03' },
+                { id: 8, name: 'Rohit Joshi', phone: '9876543217', balance: 3200, limit: 5500, lastTxn: '2026-08-07' }
+            ];
+
+            // Demo transactions
+            state.transactions = [
+                { id: 1, date: '2026-08-07', items: 3, total: 450, profit: 120, mode: 'cash' },
+                { id: 2, date: '2026-08-07', items: 5, total: 680, profit: 180, mode: 'upi' },
+                { id: 3, date: '2026-08-07', items: 2, total: 280, profit: 75, mode: 'credit' },
+                { id: 4, date: '2026-08-07', items: 4, total: 520, profit: 140, mode: 'cash' },
+                { id: 5, date: '2026-08-07', items: 6, total: 850, profit: 220, mode: 'upi' }
+            ];
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const tab = e.currentTarget.dataset.tab;
+                    switchTab(tab);
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F2') { e.preventDefault(); switchTab('pos'); }
+                if (e.key === 'F3') { e.preventDefault(); switchTab('inventory'); }
+                if (e.key === 'F4') { e.preventDefault(); switchTab('udhaar'); }
+                if (e.key === 'F5') { e.preventDefault(); switchTab('analytics'); }
+                if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveSettings(); }
+                if (e.ctrlKey && e.key === 'e') { e.preventDefault(); exportAllData(); }
+            });
+        }
+
+        // ========== NAVIGATION ==========
+        function switchTab(tabName) {
+            state.currentTab = tabName;
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.tab === tabName);
+            });
+
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+
+            switch(tabName) {
+                case 'dashboard': renderDashboard(); break;
+                case 'pos': renderPOS(); break;
+                case 'inventory': renderInventory(); break;
+                case 'udhaar': renderUdhaar(); break;
+                case 'analytics': renderAnalytics(); break;
+                case 'reports': renderReports(); break;
+            }
+
+            saveState();
+        }
+
+        // ========== DASHBOARD ==========
+        function renderDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayTxns = state.transactions.filter(t => t.date === today);
+            const revenue = todayTxns.reduce((sum, t) => sum + t.total, 0);
+            const profit = todayTxns.reduce((sum, t) => sum + t.profit, 0);
+            const udhaar = state.customers.reduce((sum, c) => sum + c.balance, 0);
+            const monthly = profit * 30;
+
+            document.getElementById('dashRevenue').textContent = formatCurrency(revenue);
+            document.getElementById('dashProfit').textContent = formatCurrency(profit);
+            document.getElementById('dashUdhaar').textContent = formatCurrency(udhaar);
+            document.getElementById('dashMonthly').textContent = formatCurrency(monthly);
+
+            // Trends
+            document.getElementById('revenueTrend').textContent = '↑ +12%';
+            document.getElementById('profitTrend').textContent = '↑ +8%';
+            document.getElementById('udhaarTrend').textContent = '↓ -3%';
+
+            // Alerts
+            const lowStock = state.products.filter(p => p.stock < 10);
+            const alertsHtml = lowStock.length > 0 
+                ? lowStock.slice(0, 8).map(p => `<div style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;"><span style="font-size: 11px;">${p.name.substring(0, 25)}</span><span class="text-error" style="font-weight: 700;">${p.stock} left</span></div>`).join('')
+                : '<p class="text-muted" style="font-size: 11px; padding: 10px;">All items well stocked</p>';
+            document.getElementById('alertsList').innerHTML = alertsHtml;
+
+            // Top performers
+            const sorted = [...state.products].sort((a, b) => b.velocity - a.velocity);
+            const topHtml = sorted.slice(0, 8).map(p => `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                    <span style="font-size: 11px;">${p.name.substring(0, 20)}</span>
+                    <span class="text-success" style="font-weight: 700;">⬆ ${p.velocity}</span>
+                </div>
+            `).join('');
+            document.getElementById('topPerformers').innerHTML = topHtml;
+
+            // Slow movers
+            const slowHtml = sorted.slice(-8).reverse().map(p => `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                    <span style="font-size: 11px;">${p.name.substring(0, 20)}</span>
+                    <span class="text-warning" style="font-weight: 700;">⬇ ${p.velocity}</span>
+                </div>
+            `).join('');
+            document.getElementById('slowMovers').innerHTML = slowHtml;
+
+            // System metrics
+            document.getElementById('totalProducts').textContent = state.products.length;
+            document.getElementById('totalCustomers').textContent = state.customers.length;
+            document.getElementById('totalTxns').textContent = state.transactions.length;
+            const avgOrderValue = state.transactions.length > 0 ? Math.round(state.transactions.reduce((sum, t) => sum + t.total, 0) / state.transactions.length) : 0;
+            document.getElementById('avgOrderValue').textContent = formatCurrency(avgOrderValue);
+
+            // Charts
+            renderHourlyChart();
+            renderCategoryChart();
+        }
+
+        function renderHourlyChart() {
+            const ctx = document.getElementById('hourlyChart');
+            if (!ctx) return;
+
+            const hours = Array.from({length: 14}, (_, i) => `${i + 8}:00`);
+            const data = hours.map(() => Math.floor(Math.random() * 1000) + 300);
+
+            if (charts.hourly) charts.hourly.destroy();
+            charts.hourly = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Sales (₹)',
+                        data: data,
+                        borderColor: '#00E5FF',
+                        backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00E5FF',
+                        pointBorderColor: '#0089D1',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0, 229, 255, 0.05)' },
+                            ticks: { color: '#9E9E9E', font: { family: 'IBM Plex Mono' } }
+                        },
+                        x: {
+                            grid: { color: 'rgba(0, 229, 255, 0.05)' },
+                            ticks: { color: '#9E9E9E', font: { family: 'IBM Plex Mono' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCategoryChart() {
+            const ctx = document.getElementById('categoryChart');
+            if (!ctx) return;
+
+            const categories = ['Staples', 'Dairy', 'Spices', 'Beverages', 'Personal Care', 'Cleaning', 'Snacks'];
+            const data = categories.map(() => Math.floor(Math.random() * 5000) + 1000);
+            const colors = ['#00E5FF', '#00E676', '#FF6D00', '#D500F9', '#FF1744', '#0089D1', '#FFC400'];
+
+            if (charts.category) charts.category.destroy();
+            charts.category = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#0F1419',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#E0E0E0', font: { family: 'IBM Plex Mono' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function simulateSales() {
+            const randomSale = {
+                id: state.transactions.length + 1,
+                date: new Date().toISOString().split('T')[0],
+                items: Math.floor(Math.random() * 8) + 1,
+                total: Math.floor(Math.random() * 1000) + 200,
+                profit: Math.floor(Math.random() * 400) + 50,
+                mode: ['cash', 'upi', 'credit'][Math.floor(Math.random() * 3)]
+            };
+            state.transactions.push(randomSale);
+            saveState();
+            renderDashboard();
+            updateLiveLedger();
+            showToast(`Simulated sale: ${formatCurrency(randomSale.total)}`, 'success');
+        }
+
+        // ========== POS BILLING ==========
+        function renderPOS() {
+            const productHtml = state.products.map(p => `
+                <button class="btn secondary" style="padding: 12px; text-align: left; white-space: normal; height: auto; font-size: 10px;" onclick="addToCart(${p.id})">
+                    <div style="font-weight: 700; font-size: 10px;">${p.name.substring(0, 20)}</div>
+                    <div style="font-size: 9px; color: var(--text-secondary); margin-top: 4px;">${formatCurrency(p.price)} | ${p.stock} left</div>
+                </button>
+            `).join('');
+            document.getElementById('productList').innerHTML = productHtml;
+
+            updateCartDisplay();
+
+            const customerOptions = state.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            document.getElementById('customerDropdown').innerHTML = '<option value="">-- Choose Customer --</option>' + customerOptions;
+        }
+
+        function addToCart(productId) {
+            const product = state.products.find(p => p.id === productId);
+            if (!product || product.stock <= 0) {
+                showToast('Out of stock', 'error');
+                return;
+            }
+
+            const existing = state.cart.find(item => item.productId === productId);
+            if (existing) {
+                existing.qty = Math.min(existing.qty + 1, product.stock);
+            } else {
+                state.cart.push({ productId, qty: 1 });
+            }
+
+            updateCartDisplay();
+            saveState();
+        }
+
+        function updateCartDisplay() {
+            const cartHtml = state.cart.length > 0
+                ? state.cart.map(item => {
+                    const product = state.products.find(p => p.id === item.productId);
+                    const lineTotal = product.price * item.qty;
+                    return `
+                        <div style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 10px; font-weight: 600;">${product.name.substring(0, 20)}</div>
+                                <div style="font-size: 9px; color: var(--text-secondary);">${formatCurrency(product.price)} × ${item.qty}</div>
+                            </div>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <button class="btn secondary" style="padding: 3px 6px; font-size: 9px;" onclick="changeQty(${item.productId}, -1)">−</button>
+                                <span style="width: 25px; text-align: center; font-weight: 700; font-size: 10px;">${item.qty}</span>
+                                <button class="btn secondary" style="padding: 3px 6px; font-size: 9px;" onclick="changeQty(${item.productId}, 1)">+</button>
+                                <button class="btn danger" style="padding: 3px 6px; font-size: 9px;" onclick="removeFromCart(${item.productId})">✕</button>
+                            </div>
+                            <div style="text-align: right; min-width: 60px; font-weight: 700; font-size: 10px;">${formatCurrency(lineTotal)}</div>
+                        </div>
+                    `;
+                }).join('')
+                : '<p class="text-muted" style="font-size: 11px; padding: 10px;">Cart is empty</p>';
+
+            document.getElementById('cartItems').innerHTML = cartHtml;
+
+            const subtotal = state.cart.reduce((sum, item) => {
+                const product = state.products.find(p => p.id === item.productId);
+                return sum + (product.price * item.qty);
+            }, 0);
+
+            const gst = subtotal * 0.05;
+            const total = subtotal + gst;
+
+            document.getElementById('cartSubtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('cartGST').textContent = formatCurrency(gst);
+            document.getElementById('cartTotal').textContent = formatCurrency(total);
+        }
+
+        function changeQty(productId, delta) {
+            const item = state.cart.find(i => i.productId === productId);
+            const product = state.products.find(p => p.id === productId);
+            if (item) {
+                item.qty = Math.max(1, Math.min(item.qty + delta, product.stock));
+                updateCartDisplay();
+                saveState();
+            }
+        }
+
+        function removeFromCart(productId) {
+            state.cart = state.cart.filter(item => item.productId !== productId);
+            updateCartDisplay();
+            saveState();
+        }
+
+        function clearCart() {
+            state.cart = [];
+            state.selectedCustomer = null;
+            updateCartDisplay();
+            saveState();
+        }
+
+        function updatePaymentMode() {
+            state.paymentMode = document.getElementById('paymentMode').value;
+            const customerSelect = document.getElementById('customerSelect');
+            customerSelect.classList.toggle('hidden', state.paymentMode !== 'credit');
+        }
+
+        function selectCustomer() {
+            const customerId = document.getElementById('customerDropdown').value;
+            state.selectedCustomer = customerId ? state.customers.find(c => c.id == customerId) : null;
+        }
+
+        function completeCheckout() {
+            if (state.cart.length === 0) {
+                showToast('Cart is empty', 'error');
+                return;
+            }
+
+            if (state.paymentMode === 'credit' && !state.selectedCustomer) {
+                showToast('Select a customer for Udhaar', 'error');
+                return;
+            }
+
+            const subtotal = state.cart.reduce((sum, item) => {
+                const product = state.products.find(p => p.id === item.productId);
+                return sum + (product.price * item.qty);
+            }, 0);
+
+            const gst = subtotal * 0.05;
+            const total = subtotal + gst;
+            const profit = state.cart.reduce((sum, item) => {
+                const product = state.products.find(p => p.id === item.productId);
+                return sum + ((product.price - product.cost) * item.qty);
+            }, 0);
+
+            state.cart.forEach(item => {
+                const product = state.products.find(p => p.id === item.productId);
+                product.stock = Math.max(0, product.stock - item.qty);
+            });
+
+            const txn = {
+                id: state.transactions.length + 1,
+                date: new Date().toISOString().split('T')[0],
+                items: state.cart.length,
+                total: Math.round(total),
+                profit: Math.round(profit),
+                mode: state.paymentMode
+            };
+            state.transactions.push(txn);
+
+            if (state.paymentMode === 'credit' && state.selectedCustomer) {
+                state.selectedCustomer.balance += Math.round(total);
+                state.selectedCustomer.lastTxn = txn.date;
+            }
+
+            saveState();
+            showReceipt(txn);
+            clearCart();
+            updateLiveLedger();
+            showToast('✓ Transaction completed', 'success');
+        }
+
+        function showReceipt(txn) {
+            const receiptHtml = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="font-size: 16px; font-weight: 700; color: var(--neon-green);">✓ SUCCESS</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">Transaction ID: TXN${txn.id}</div>
+                </div>
+                <div style="background: rgba(0, 229, 255, 0.08); padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11px;">
+                        <span class="text-muted">Subtotal:</span>
+                        <span class="font-bold">${formatCurrency(txn.total * 0.95)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11px;">
+                        <span class="text-muted">GST (5%):</span>
+                        <span class="font-bold">${formatCurrency(txn.total * 0.05)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 12px;">
+                        <span style="color: var(--neon-cyan); font-weight: 700;">TOTAL:</span>
+                        <span style="color: var(--neon-cyan); font-weight: 700;">${formatCurrency(txn.total)}</span>
+                    </div>
+                </div>
+                <div style="font-size: 10px; color: var(--text-secondary); text-align: center;">
+                    <div>Payment: ${txn.mode.toUpperCase()}</div>
+                    <div>${new Date().toLocaleString()}</div>
+                </div>
+            `;
+            document.getElementById('receiptContent').innerHTML = receiptHtml;
+            document.getElementById('receiptModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function shareReceipt() {
+            showToast('Receipt shared via WhatsApp', 'success');
+        }
+
+        // ========== INVENTORY ==========
+        function renderInventory() {
+            updateInventoryView();
+        }
+
+        function updateInventoryView() {
+            let items = [...state.products];
+
+            const category = document.getElementById('categoryFilter').value;
+            if (category !== 'All') {
+                items = items.filter(p => p.category === category);
+            }
+
+            const filter = document.getElementById('stockFilter').value;
+            if (filter === 'low') {
+                items = items.filter(p => p.stock < 10);
+            } else if (filter === 'expiring') {
+                const today = new Date();
+                items = items.filter(p => {
+                    const daysLeft = Math.ceil((new Date(p.expiry) - today) / (1000 * 60 * 60 * 24));
+                    return daysLeft >= 0 && daysLeft <= 30;
+                });
+            } else if (filter === 'fast') {
+                items = items.filter(p => p.velocity >= 70);
+            }
+
+            const sort = document.getElementById('sortBy').value;
+            if (sort === 'stock') {
+                items.sort((a, b) => a.stock - b.stock);
+            } else if (sort === 'margin') {
+                items.sort((a, b) => ((b.price - b.cost) / b.price) - ((a.price - a.cost) / a.price));
+            } else {
+                items.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            const tableHtml = items.slice(0, 50).map(p => {
+                const margin = ((p.price - p.cost) / p.price * 100).toFixed(0);
+                const daysLeft = Math.ceil((new Date(p.expiry) - new Date()) / (1000 * 60 * 60 * 24));
+                const expiryStatus = daysLeft < 0 ? '<span class="text-error">EXPIRED</span>' : daysLeft <= 30 ? `<span class="text-warning">${daysLeft}d</span>` : '<span class="text-success">OK</span>';
+                return `
+                    <tr>
+                        <td style="font-size: 11px;">${p.name.substring(0, 25)}</td>
+                        <td style="font-size: 11px;">${p.category}</td>
+                        <td><span class="stat-badge ${p
+.stock < 10 ? 'down' : ''}">${p.stock}</span></td>
+                        <td style="font-size: 11px;">${formatCurrency(p.price)}</td>
+                        <td style="font-size: 11px;">${margin}%</td>
+                        <td><span class="stat-badge ${p.velocity >= 70 ? 'up' : ''}">${p.velocity}</span></td>
+                        <td>${expiryStatus}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('inventoryTable').innerHTML = tableHtml || '<tr><td colspan="7" class="text-center text-muted">No items found</td></tr>';
+        }
+
+        function exportInventory() {
+            let csv = 'Product Name,Category,Stock,Price,Cost,Margin %,Velocity,Expiry\n';
+            state.products.forEach(p => {
+                const margin = ((p.price - p.cost) / p.price * 100).toFixed(0);
+                csv += `"${p.name}",${p.category},${p.stock},${p.price},${p.cost},${margin},${p.velocity},${p.expiry}\n`;
+            });
+            downloadCSV(csv, 'inventory.csv');
+            showToast('Inventory exported', 'success');
+        }
+
+        // ========== UDHAAR LEDGER ==========
+        function renderUdhaar() {
+            const tableHtml = state.customers.map(c => `
+                <tr>
+                    <td style="font-size: 11px;">${c.name}</td>
+                    <td style="font-size: 11px;">${c.phone}</td>
+                    <td><span class="stat-badge ${c.balance > 0 ? 'down' : 'up'}">${formatCurrency(c.balance)}</span></td>
+                    <td style="font-size: 11px;">${formatCurrency(c.limit)}</td>
+                    <td><span class="stat-badge ${c.balance > c.limit * 0.8 ? 'down' : 'up'}">${c.balance > c.limit * 0.8 ? '⚠️ HIGH' : '✓ OK'}</span></td>
+                    <td style="font-size: 11px;">${c.lastTxn}</td>
+                    <td><button class="btn secondary" style="padding: 4px 8px; font-size: 9px;" onclick="recordPayment(${c.id})">Record Payment</button></td>
+                </tr>
+            `).join('');
+            document.getElementById('udhaarTable').innerHTML = tableHtml;
+        }
+
+        function recordPayment(customerId) {
+            const customer = state.customers.find(c => c.id === customerId);
+            const amount = prompt(`Record payment for ${customer.name}\nCurrent balance: ${formatCurrency(customer.balance)}\nEnter amount:`);
+            if (amount && !isNaN(amount)) {
+                customer.balance = Math.max(0, customer.balance - parseFloat(amount));
+                customer.lastTxn = new Date().toISOString().split('T')[0];
+                saveState();
+                renderUdhaar();
+                updateLiveLedger();
+                showToast(`Payment recorded: ${formatCurrency(amount)}`, 'success');
+            }
+        }
+
+        function exportUdhaar() {
+            let csv = 'Customer Name,Phone,Balance,Credit Limit,Status,Last Transaction\n';
+            state.customers.forEach(c => {
+                csv += `"${c.name}",${c.phone},${c.balance},${c.limit},"${c.balance > c.limit * 0.8 ? 'HIGH' : 'OK'}",${c.lastTxn}\n`;
+            });
+            downloadCSV(csv, 'udhaar-ledger.csv');
+            showToast('Udhaar ledger exported', 'success');
+        }
+
+        // ========== ANALYTICS ==========
+        function renderAnalytics() {
+            renderSalesChart();
+            renderVelocityChart();
+
+            // Top products
+            const sorted = [...state.products].sort((a, b) => b.velocity - a.velocity);
+            const topHtml = sorted.slice(0, 15).map((p, i) => `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <span style="background: var(--neon-cyan); color: #000; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 10px;">${i + 1}</span>
+                        <span style="font-size: 11px;">${p.name.substring(0, 20)}</span>
+                    </div>
+                    <span class="text-success" style="font-weight: 700; font-size: 11px;">⬆ ${p.velocity}</span>
+                </div>
+            `).join('');
+            document.getElementById('topProductsChart').innerHTML = topHtml;
+
+            // Category breakdown
+            const categories = {};
+            state.products.forEach(p => {
+                if (!categories[p.category]) categories[p.category] = 0;
+                categories[p.category]++;
+            });
+            const catHtml = Object.entries(categories).map(([cat, count]) => `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                    <span style="font-size: 11px;">${cat}</span>
+                    <span class="font-bold" style="font-size: 11px;">${count} items</span>
+                </div>
+            `).join('');
+            document.getElementById('categoryBreakdown').innerHTML = catHtml;
+
+            // Recent transactions
+            const txnHtml = state.transactions.slice(-10).reverse().map(t => `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                    <div style="font-size: 10px;">
+                        <div class="font-bold">${t.date}</div>
+                        <div class="text-muted">${t.items} items • ${t.mode}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="font-bold" style="color: var(--neon-cyan);">${formatCurrency(t.total)}</div>
+                        <div class="text-success" style="font-size: 10px;">+${formatCurrency(t.profit)}</div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('txnHistory').innerHTML = txnHtml || '<p class="text-muted" style="font-size: 11px; padding: 10px;">No transactions</p>';
+
+            // Metrics
+            const today = new Date().toISOString().split('T')[0];
+            const todayTxns = state.transactions.filter(t => t.date === today);
+            document.getElementById('txnToday').textContent = todayTxns.length;
+            const avgTxn = todayTxns.length > 0 ? Math.round(todayTxns.reduce((sum, t) => sum + t.total, 0) / todayTxns.length) : 0;
+            document.getElementById('avgTxn').textContent = formatCurrency(avgTxn);
+            const totalRevenue = state.transactions.reduce((sum, t) => sum + t.total, 0);
+            const totalProfit = state.transactions.reduce((sum, t) => sum + t.profit, 0);
+            const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : 0;
+            document.getElementById('profitMargin').textContent = profitMargin + '%';
+            const turnover = state.products.length > 0 ? (state.transactions.length / state.products.length).toFixed(2) : 0;
+            document.getElementById('turnover').textContent = turnover + 'x';
+        }
+
+        function renderSalesChart() {
+            const ctx = document.getElementById('salesChart');
+            if (!ctx) return;
+
+            const dates = Array.from({length: 7}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                return d.toISOString().split('T')[0];
+            }).reverse();
+
+            const data = dates.map(date => {
+                const txns = state.transactions.filter(t => t.date === date);
+                return txns.reduce((sum, t) => sum + t.total, 0);
+            });
+
+            if (charts.sales) charts.sales.destroy();
+            charts.sales = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Daily Sales (₹)',
+                        data: data,
+                        backgroundColor: 'rgba(0, 229, 255, 0.2)',
+                        borderColor: '#00E5FF',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0, 229, 255, 0.05)' }, ticks: { color: '#9E9E9E' } },
+                        x: { grid: { color: 'rgba(0, 229, 255, 0.05)' }, ticks: { color: '#9E9E9E' } }
+                    }
+                }
+            });
+        }
+
+        function renderVelocityChart() {
+            const ctx = document.getElementById('velocityChart');
+            if (!ctx) return;
+
+            const topProducts = [...state.products].sort((a, b) => b.velocity - a.velocity).slice(0, 8);
+
+            if (charts.velocity) charts.velocity.destroy();
+            charts.velocity = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: topProducts.map(p => p.name.substring(0, 12)),
+                    datasets: [{
+                        label: 'Velocity Score',
+                        data: topProducts.map(p => p.velocity),
+                        borderColor: '#00E5FF',
+                        backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#00E5FF',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(0, 229, 255, 0.1)' },
+                            ticks: { color: '#9E9E9E' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportAnalytics() {
+            let csv = 'Analytics Report\n\n';
+            csv += 'Daily Sales\n';
+            state.transactions.forEach(t => {
+                csv += `${t.date},${t.total},${t.profit},${t.mode}\n`;
+            });
+            downloadCSV(csv, 'analytics-report.csv');
+            showToast('Analytics exported', 'success');
+        }
+
+        // ========== REPORTS ==========
+        function renderReports() {}
+
+        function generateDailyReport() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayTxns = state.transactions.filter(t => t.date === today);
+            const revenue = todayTxns.reduce((sum, t) => sum + t.total, 0);
+            const profit = todayTxns.reduce((sum, t) => sum + t.profit, 0);
+
+            const html = `
+                <div style="font-size: 11px; line-height: 1.8;">
+                    <div style="margin-bottom: 10px;"><strong>Date:</strong> ${today}</div>
+                    <div style="margin-bottom: 10px;"><strong>Transactions:</strong> ${todayTxns.length}</div>
+                    <div style="margin-bottom: 10px;"><strong>Revenue:</strong> <span class="text-success">${formatCurrency(revenue)}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Profit:</strong> <span class="text-success">${formatCurrency(profit)}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Margin:</strong> ${revenue > 0 ? ((profit/revenue)*100).toFixed(1) : 0}%</div>
+                </div>
+            `;
+            document.getElementById('dailyReport').innerHTML = html;
+        }
+
+        function generateWeeklyReport() {
+            const html = `
+                <div style="font-size: 11px; line-height: 1.8;">
+                    <div style="margin-bottom: 10px;"><strong>Period:</strong> Last 7 days</div>
+                    <div style="margin-bottom: 10px;"><strong>Total Transactions:</strong> ${state.transactions.length}</div>
+                    <div style="margin-bottom: 10px;"><strong>Total Revenue:</strong> <span class="text-success">${formatCurrency(state.transactions.reduce((sum, t) => sum + t.total, 0))}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Total Profit:</strong> <span class="text-success">${formatCurrency(state.transactions.reduce((sum, t) => sum + t.profit, 0))}</span></div>
+                </div>
+            `;
+            document.getElementById('weeklyReport').innerHTML = html;
+        }
+
+        function generateFinancialReport() {
+            const totalRevenue = state.transactions.reduce((sum, t) => sum + t.total, 0);
+            const totalProfit = state.transactions.reduce((sum, t) => sum + t.profit, 0);
+            const totalUdhaar = state.customers.reduce((sum, c) => sum + c.balance, 0);
+
+            const html = `
+                <div style="font-size: 11px; line-height: 1.8;">
+                    <div style="margin-bottom: 10px;"><strong>Total Revenue:</strong> <span class="text-success">${formatCurrency(totalRevenue)}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Total Profit:</strong> <span class="text-success">${formatCurrency(totalProfit)}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Outstanding Udhaar:</strong> <span class="text-warning">${formatCurrency(totalUdhaar)}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Profit Margin:</strong> ${totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(1) : 0}%</div>
+                </div>
+            `;
+            document.getElementById('financialReport').innerHTML = html;
+        }
+
+        function generateInventoryReport() {
+            const lowStock = state.products.filter(p => p.stock < 10).length;
+            const expiring = state.products.filter(p => {
+                const daysLeft = Math.ceil((new Date(p.expiry) - new Date()) / (1000 * 60 * 60 * 24));
+                return daysLeft >= 0 && daysLeft <= 30;
+            }).length;
+
+            const html = `
+                <div style="font-size: 11px; line-height: 1.8;">
+                    <div style="margin-bottom: 10px;"><strong>Total Items:</strong> ${state.products.length}</div>
+                    <div style="margin-bottom: 10px;"><strong>Low Stock:</strong> <span class="text-warning">${lowStock}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Expiring Soon:</strong> <span class="text-error">${expiring}</span></div>
+                    <div style="margin-bottom: 10px;"><strong>Total Value:</strong> <span class="text-success">${formatCurrency(state.products.reduce((sum, p) => sum + (p.price * p.stock), 0))}</span></div>
+                </div>
+            `;
+            document.getElementById('inventoryReport').innerHTML = html;
+        }
+
+        // ========== UTILITIES ==========
+        function updateDateTime() {
+            const now = new Date();
+            const date = now.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('storeDate').textContent = `${date} • ${time}`;
+        }
+
+        function updateLiveLedger() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayTxns = state.transactions.filter(t => t.date === today);
+            const revenue = todayTxns.reduce((sum, t) => sum + t.total, 0);
+            const profit = todayTxns.reduce((sum, t) => sum + t.profit, 0);
+            const udhaar = state.customers.reduce((sum, c) => sum + c.balance, 0);
+            const lowStock = state.products.filter(p => p.stock < 10).length;
+            const expiring = state.products.filter(p => {
+                const daysLeft = Math.ceil((new Date(p.expiry) - new Date()) / (1000 * 60 * 60 * 24));
+                return daysLeft >= 0 && daysLeft <= 30;
+            }).length;
+            const avgOrder = todayTxns.length > 0 ? Math.round(revenue / todayTxns.length) : 0;
+
+            document.getElementById('todayRevenue').textContent = formatCurrency(revenue);
+            document.getElementById('todayProfit').textContent = formatCurrency(profit);
+            document.getElementById('totalUdhaar').textContent = formatCurrency(udhaar);
+            document.getElementById('lowStockCount').textContent = lowStock;
+            document.getElementById('expiringCount').textContent = expiring;
+            document.getElementById('avgOrder').textContent = formatCurrency(avgOrder);
+        }
+
+        function formatCurrency(value) {
+            return '₹' + Math.round(value).toLocaleString('en-IN');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (query.length > 0) {
+                const results = state.products.filter(p => p.name.toLowerCase().includes(query));
+                showToast(`Found ${results.length} products`, 'success');
+            }
+        }
+
+        function saveSettings() {
+            state.storeName = document.getElementById('storeNameInput').value;
+            state.ownerName = document.getElementById('ownerNameInput').value;
+            document.getElementById('storeName').textContent = state.storeName;
+            saveState();
+            showToast('Settings saved', 'success');
+        }
+
+        function saveState() {
+            localStorage.setItem('retailcoreState', JSON.stringify(state));
+        }
+
+        function exportAllData() {
+            const data = JSON.stringify(state, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'retailcore-backup.json';
+            a.click();
+            showToast('Data exported', 'success');
+        }
+
+        function resetAllData() {
+            if (confirm('Reset to demo data? This cannot be undone.')) {
+                localStorage.removeItem('retailcoreState');
+                location.reload();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Clear ALL data? This cannot be undone.')) {
+                localStorage.clear();
+                state.transactions = [];
+                state.cart = [];
+                state.customers.forEach(c => c.balance = 0);
+                saveState();
+                renderDashboard();
+                updateLiveLedger();
+                showToast('All data cleared', 'success');
+            }
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function logout() {
+            if (confirm('Logout?')) {
+                showToast('Logged out', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+
+        function toggleNotifications() {
+            showToast('3 new alerts', 'info');
+        }
+
+        function toggleSettings() {
+            switchTab('settings');
+        }
+    </script>
+</body>
+</html>
